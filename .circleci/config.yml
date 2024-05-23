@@ -4,6 +4,9 @@ executors:
   android-executor:
     docker:
       - image: circleci/android:api-29
+    environment:
+      JAVA_HOME: /usr/lib/jvm/java-17-openjdk
+      PATH: /usr/lib/jvm/java-17-openjdk/bin/:$PATH
     working_directory: ~/project
 
 jobs:
@@ -16,6 +19,15 @@ jobs:
       - run:
           name: Grant execute permission for gradlew
           command: chmod +x ./gradlew
+
+      # Set up JDK 17
+      - run:
+          name: Install JDK 17
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y openjdk-17-jdk
+            sudo update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+            sudo update-alternatives --set javac /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
 
       # Download and cache dependencies
       - restore_cache:
