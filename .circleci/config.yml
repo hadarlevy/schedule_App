@@ -4,6 +4,7 @@ executors:
   android-executor:
     docker:
       - image: circleci/android:api-29
+    working_directory: ~/project
 
 jobs:
   build:
@@ -11,10 +12,15 @@ jobs:
     steps:
       - checkout
 
+      # Ensure gradlew has execute permissions
+      - run:
+          name: Grant execute permission for gradlew
+          command: chmod +x ./gradlew
+
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "build.gradle" }}
+            - v1-dependencies-{{ checksum "app/build.gradle" }}
             - v1-dependencies-
 
       - run:
@@ -25,7 +31,7 @@ jobs:
           paths:
             - ~/.gradle/caches/
             - ~/.gradle/wrapper/
-          key: v1-dependencies-{{ checksum "build.gradle" }}
+          key: v1-dependencies-{{ checksum "app/build.gradle" }}
 
       # Build the project
       - run:
@@ -37,7 +43,7 @@ jobs:
           path: app/build/outputs/apk/debug/
           destination: apks
 
-      #Run unit tests
+      # Run unit tests
       - run:
           name: Run Unit Tests
           command: ./gradlew test
