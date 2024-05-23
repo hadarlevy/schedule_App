@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">Schedule_Application</string>
+    <string name="app_name">Schdule_APP</string>
+    <string name="login">Login</string>
+    <string name="email">Email</string>
+    <string name="password">password</string>
+    <string name="registration">Registration</string>
+    <string name="register">Register</string>
+    <string name="click_to_login">Have account</string>
+    <string name="click_to_register">Do not have account</string>
+    <string name="logout">Logout</string>
+    <string name="hello_user">Hello User!</string>
 </resources>
