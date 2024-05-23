@@ -4,10 +4,10 @@ executors:
   android-executor:
     docker:
       - image: circleci/android:api-29
+    working_directory: ~/project
     environment:
       JAVA_HOME: /usr/lib/jvm/java-17-openjdk
       PATH: /usr/lib/jvm/java-17-openjdk/bin/:$PATH
-    working_directory: ~/project
 
 jobs:
   build:
@@ -20,7 +20,7 @@ jobs:
           name: Grant execute permission for gradlew
           command: chmod +x ./gradlew
 
-      #Set up JDK 17
+      # Set up JDK 17
       - run:
           name: Install JDK 17
           command: |
