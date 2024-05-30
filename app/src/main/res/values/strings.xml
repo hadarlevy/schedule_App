@@ -9,4 +9,8 @@
     <string name="click_to_register">Do not have account</string>
     <string name="logout">Logout</string>
     <string name="hello_user">Hello User!</string>
+    <string name="name">name</string>
+    <string name="lastname">last name</string>
+    <string name="phone">phone namber</string>
+    <string name="ForgotPassword">Forgot Password?</string>
 </resources>
