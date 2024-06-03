@@ -3,10 +3,34 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
     android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="50dp"
     tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/verifyMsg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="-90dp"
+        android:text="@string/email_has_not_verified"
+        android:textColor="#E91E63"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/verifyBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="200dp"
+        android:gravity="center"
+        android:text="Verify Now"
+        android:textSize="20sp"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/user_details"
@@ -15,9 +39,10 @@
         android:text="@string/hello_user" />
 
     <Button
-        android:text="@string/logout"
         android:id="@+id/logout"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="@string/logout" />
+
 
 </LinearLayout>

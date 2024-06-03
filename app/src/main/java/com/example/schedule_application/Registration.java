@@ -5,8 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -94,31 +97,55 @@ public class Registration extends AppCompatActivity {
                 phone = String.valueOf(editTextPhone.getText());
 
 
+
                 if(TextUtils.isEmpty(email)) {
                     Toast.makeText(Registration.this, "Enter email", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
+
                 if(TextUtils.isEmpty(password)) {
                     Toast.makeText(Registration.this, "Enter password", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
                 if(password.length()<6){
                     editTextPassword.setError("Password must be 6 characters or more");
+                    progressBar.setVisibility(View.GONE);
                 }
 
                 if(TextUtils.isEmpty(name)) {
                     Toast.makeText(Registration.this, "Enter name", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
+                    return;
+                }
+                if(name.length() > 20 || !name.matches("[a-zA-Z]+")) {
+                    editTextName.setError("Name must be in English, without spaces, and less than 20 characters");
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
                 if(TextUtils.isEmpty(last_name)) {
                     Toast.makeText(Registration.this, "Enter last name", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
+                    return;
+                }
+                if(last_name.length() > 20 || !last_name.matches("[a-zA-Z]+")) {
+                    editTextLastName.setError("Last name must be in English, without spaces, and less than 20 characters");
+                    progressBar.setVisibility(View.GONE);
+                    return;
+                }
+                if(TextUtils.isEmpty(phone)) {
+                    Toast.makeText(Registration.this, "Enter phone number", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
+                    return;
+                }
+                if (!phone.matches("^(\\+972|0)([23489]|5[0248]|7[3678])\\d{7}$")) {
+                    editTextPhone.setError("Enter a valid Israeli phone number");
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
 
-                if(TextUtils.isEmpty(phone)) {
-                    Toast.makeText(Registration.this, "Enter phone number", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+
                 // after the user clicked then the progressbar will be visible
                 progressBar.setVisibility(View.VISIBLE);
 
@@ -128,8 +155,27 @@ public class Registration extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 // if task successful means if the user has successfully created
                                 if (task.isSuccessful()) {
+                                    // verify email address(send verification link)
+                                    FirebaseUser fuser = mAuth.getCurrentUser();
+                                    fuser.sendEmailVerification().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void unused) {
+                                            Toast.makeText(Registration.this, "Verification Email Has been Send", Toast.LENGTH_SHORT).show();
+                                        }
+
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Log.d(TAG, "OnFailure: Email not send " + e.getMessage());
+                                        }
+                                    });
+
+
+
+
                                     Toast.makeText(Registration.this, "Account has successfully created",
                                             Toast.LENGTH_SHORT).show();
+                                    progressBar.setVisibility(View.GONE);
                                     userID = mAuth.getCurrentUser().getUid();
                                     //creating collection called user and inside that we will have the other things
                                     DocumentReference documentReference = fstore.collection("users").document(userID);

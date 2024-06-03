@@ -13,4 +13,5 @@
     <string name="lastname">last name</string>
     <string name="phone">phone namber</string>
     <string name="ForgotPassword">Forgot Password?</string>
+    <string name="email_has_not_verified">Email Has Not Verified!</string>
 </resources>
