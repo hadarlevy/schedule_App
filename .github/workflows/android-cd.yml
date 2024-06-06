@@ -46,7 +46,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           # Copy the keystore file to the working directory
-          cp C:\Users\User\my-release-key.jks ./my-release-key.jks
+          cp C:/Users/User/my-release-key.jks ./my-release-key.jks
 
           # Sign the APK using the relative path to the keystore
           jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore my-release-key.jks \
