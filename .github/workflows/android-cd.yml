@@ -46,13 +46,13 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           # Sign the APK
-          jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore "C:/Users/User/my-release-key.jks" \
+          jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore "C:\\Users\\User\\my-release-key.jks" \
           app/build/outputs/apk/release/app-release-unsigned.apk $KEY_ALIAS -storepass $KEYSTORE_PASSWORD -keypass $KEY_PASSWORD
-          
-          
+
+
           # Verify the APK
           jarsigner -verify -verbose -certs app/build/outputs/apk/release/app-release-unsigned.apk
-          
+
           # Align the APK
           zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release.apk
 
