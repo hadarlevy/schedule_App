@@ -49,7 +49,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           # Sign the APK
-          jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore my-release-key.jks \
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA256 -keystore my-release-key.jks \
           app/build/outputs/apk/release/app-release-unsigned.apk $KEY_ALIAS -storepass $KEYSTORE_PASSWORD -keypass $KEY_PASSWORD
 
           # Verify the APK
