@@ -39,16 +39,16 @@ jobs:
         run: ls -la app/build/outputs/apk/release/
         continue-on-error: true
 
+      - name: Decode and save keystore file
+        run: echo ${{ secrets.KEYSTORE_BASE64 }} | base64 --decode > my-release-key.jks
+
       - name: Sign APK
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          # Copy the keystore file to the working directory
-          cp C:/Users/User/my-release-key.jks ./my-release-key.jks
-
-          # Sign the APK using the relative path to the keystore
+          # Sign the APK
           jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore my-release-key.jks \
           app/build/outputs/apk/release/app-release-unsigned.apk $KEY_ALIAS -storepass $KEYSTORE_PASSWORD -keypass $KEY_PASSWORD
 
