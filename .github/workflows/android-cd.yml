@@ -1,4 +1,4 @@
-name: Deploy Android App to Firebase
+name: Android CD
 
 on:
   push:
@@ -26,7 +26,29 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew assembleRelease
+
+      - name: Verify APK Path
+        run: ls -R app/build/outputs/apk/release
+
+      - name: Decode Keystore
+        run: echo "${{ secrets.KEYSTORE }}" | base64 -d > release-key.jks
+
+      - name: Sign APK
+        run: |
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+          -keystore release-key.jks \
+          -storepass ${{ secrets.KEYSTORE_PASSWORD }} \
+          -keypass ${{ secrets.KEY_PASSWORD }} \
+          app/build/outputs/apk/release/app-release-unsigned.apk \
+          ${{ secrets.KEY_ALIAS }}
+
+      - name: Verify Signed APK
+        run: jarsigner -verify app/build/outputs/apk/release/app-release-unsigned.apk
+
+      - name: Zipalign APK
+        run: |
+          zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release.apk
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v2
