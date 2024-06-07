@@ -2,70 +2,44 @@ name: Android CD
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
+    branches:
+      - main  # Adjust the branch to your main branch
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-
-      - name: Cache Gradle packages
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          java-version: '11'
 
       - name: Build with Gradle
-        run: ./gradlew assembleRelease
+        run: ./gradlew build
 
-      - name: Verify APK File
-        run: ls -la app/build/outputs/apk/release/
-        continue-on-error: true
-
-      - name: Decode and save keystore file
-        run: echo ${{ secrets.KEYSTORE_BASE64 }} | base64 -d > my-release-key.jks
-
-      - name: Sign APK
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: |
-          # Sign the APK
-          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA256 -keystore my-release-key.jks \
-          app/build/outputs/apk/release/app-release-unsigned.apk $KEY_ALIAS -storepass $KEYSTORE_PASSWORD -keypass $KEY_PASSWORD
-
-          # Verify the APK
-          jarsigner -verify -verbose -certs app/build/outputs/apk/release/app-release-unsigned.apk
-
-          # Align the APK
-          zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release.apk
-
-      - name: Verify Signed APK File
-        run: ls -la app/build/outputs/apk/release/
-        continue-on-error: true
-
-      - name: Deploy to Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v2
         with:
-          appId: ${{ secrets.FIREBASE_APP_ID }}
-          token: ${{ secrets.FIREBASE_TOKEN }}
-          groups: testers
-          file: app/build/outputs/apk/release/app-release.apk
+          name: app-release.apk
+          path: app/build/outputs/apk/release/app-release.apk
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: app-release.apk
+
+      - name: Set up Firebase CLI
+        uses: w9jds/firebase-action@v10
+        with:
+          args: deploy --only hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
