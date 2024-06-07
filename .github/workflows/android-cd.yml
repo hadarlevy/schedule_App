@@ -39,19 +39,6 @@ jobs:
           ${{ secrets.KEY_ALIAS }}
       - name: Verify Signed APK
         run: jarsigner -verify app/build/outputs/apk/release/app-release-unsigned.apk
-
-      - name: Set up Android SDK
-        uses: reactivecircus/setup-android@v2
-        with:
-            sdk-platform: 'platforms;android-30'  # Adjust the SDK platform version as needed
-            build-tools: '30.0.3'  # Adjust the build tools version as needed
-
-      - name: Zipalign APK
-        run: |
-          $ANDROID_SDK_ROOT/build-tools/30.0.3/zipalign -v 4 \
-          app/build/outputs/apk/release/app-release-unsigned.apk \
-          app/build/outputs/apk/release/app-release.apk
-
       - name: Upload build artifacts
         uses: actions/upload-artifact@v2
         with:
