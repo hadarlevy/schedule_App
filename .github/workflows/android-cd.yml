@@ -5,6 +5,9 @@ on:
     branches:
       - main  # Adjust the branch to your main branch
 
+permissions:
+  contents: write  # Adjusting permissions for GITHUB_TOKEN
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,7 +20,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '17'
-          distribution: 'temurin'  # or 'adopt' or 'zulu'
+          distribution: 'temurin'
 
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x gradlew
@@ -41,9 +44,11 @@ jobs:
         with:
           name: app-release.apk
 
-      - name: Set up Firebase CLI
-        uses: w9jds/firebase-action@v10
-        with:
-          args: deploy --only hosting
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Authenticate to Firebase
+        run: firebase auth:login:ci --token ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Deploy to Firebase
+        run: firebase deploy --only hosting
