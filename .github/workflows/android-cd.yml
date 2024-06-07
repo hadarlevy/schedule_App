@@ -45,4 +45,6 @@ jobs:
       - name: Deploy to Firebase
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: firebase deploy --only hosting --token "${FIREBASE_TOKEN}"
+        run: |
+          cd $GITHUB_WORKSPACE  # Change directory to the root directory of your Android project
+          firebase deploy --only hosting --token "${FIREBASE_TOKEN}"
