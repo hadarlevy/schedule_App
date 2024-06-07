@@ -1,4 +1,4 @@
-name: Deploy Android App to Firebase
+name: Android CD
 
 on:
   push:
