@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@drawable/registration">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,24 +12,14 @@
         android:padding="24dp"
         tools:context=".Registration">
 
-        <!-- Title -->
-        <TextView
-            android:text="@string/sign_up"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:layout_marginBottom="24dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
         <!-- Name TextInput -->
         <TextView
             android:text="@string/first_name"
-            android:textColor="@color/textColorPrimary"
+            android:textColor="@color/black"
             android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp" />
+            android:layout_marginTop="135dp" />
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/name"
@@ -38,13 +28,13 @@
             android:backgroundTint="@color/light_gray"
             android:hint="@string/name_content_description"
             android:minHeight="48dp"
-            android:textColor="@color/textColorPrimary"
+            android:textColor="@color/black"
             android:textSize="16sp"/>
 
         <!-- Last Name TextInput -->
         <TextView
             android:text="@string/last_name"
-            android:textColor="@color/textColorPrimary"
+            android:textColor="@color/black"
             android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -57,13 +47,13 @@
             android:backgroundTint="@color/light_gray"
             android:hint="@string/lastname_content_description"
             android:minHeight="48dp"
-            android:textColor="@color/textColorPrimary"
+            android:textColor="@color/black"
             android:textSize="16sp" />
 
         <!-- Phone TextInput -->
         <TextView
             android:text="@string/phone"
-            android:textColor="@color/textColorPrimary"
+            android:textColor="@color/black"
             android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -76,13 +66,13 @@
             android:backgroundTint="@color/light_gray"
             android:hint="@string/phone_content_description"
             android:minHeight="48dp"
-            android:textColor="@color/textColorPrimary"
+            android:textColor="@color/black"
             android:textSize="16sp"/>
 
         <!-- Email TextInput -->
         <TextView
             android:text="@string/email"
-            android:textColor="@color/textColorPrimary"
+            android:textColor="@color/black"
             android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -95,14 +85,14 @@
             android:backgroundTint="@color/light_gray"
             android:hint="@string/email_content_description"
             android:minHeight="48dp"
-            android:textColor="@color/textColorPrimary"
+            android:textColor="@color/black"
             android:textSize="16sp"
             />
 
         <!-- Password TextInput -->
         <TextView
             android:text="@string/password"
-            android:textColor="@color/textColorPrimary"
+            android:textColor="@color/black"
             android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -116,7 +106,7 @@
             android:inputType="textPassword"
             android:hint="@string/password_content_description"
             android:minHeight="48dp"
-            android:textColor="@color/textColorPrimary"
+            android:textColor="@color/black"
             android:textSize="16sp"
             />
 
@@ -136,9 +126,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/sign_up"
-            android:backgroundTint="@color/red3"
+            android:backgroundTint="@color/black"
             android:textColor="@color/white"
             android:layout_marginTop="24dp"
+            android:padding="12dp"
             android:contentDescription="@string/register_button_content_description" />
 
         <!-- Progress Bar -->
