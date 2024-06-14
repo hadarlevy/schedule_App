@@ -35,26 +35,34 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Download build artifacts
         uses: actions/download-artifact@v2
         with:
           name: app-release.apk
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
-      - name: Verify firebase.json presence
-        run: ls -l
-      - name: Display current directory
+      - name: Print current directory
         run: pwd
-      - name: Change directory to root of repo
-        run: cd $GITHUB_WORKSPACE
-      - name: Verify firebase.json in root directory
-        run: ls -l $GITHUB_WORKSPACE
+      - name: List all files in current directory
+        run: ls -al
+      - name: List all files in the .github directory
+        run: ls -al .github
+      - name: Check if firebase.json exists in root
+        run: if [ ! -f firebase.json ]; then echo "firebase.json not found in root directory"; exit 1; fi
+      - name: Check if firebase.json exists in .github
+        run: if [ ! -f .github/firebase.json ]; then echo "firebase.json not found in .github directory"; exit 1; fi
       - name: Deploy to Firebase
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
-          if [ ! -f firebase.json ]; then
+          if [ -f firebase.json ]; then
+            firebase deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}"
+          elif [ -f .github/firebase.json ]; then
+            cd .github
+            firebase deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}"
+          else
             echo "firebase.json not found!"
             exit 1
           fi
-          firebase deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}"
