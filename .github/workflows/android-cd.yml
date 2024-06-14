@@ -46,4 +46,4 @@ jobs:
       - name: Distribute via Firebase App Distribution
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: firebase appdistribution:distribute app-release.apk --app schedule-app-b767c --groups hlev2454@gmail.com
+        run: firebase appdistribution:distribute app-release.apk --app schedule-app-b767c --groups mine
