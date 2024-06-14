@@ -47,6 +47,6 @@ jobs:
 
       - name: Save artifact to local machine
         run: |
-            cd C:\Users\User\Desktop\Hadar-SCE\Final_Project\Schedule_Application
+            cd C:/Users/User/Desktop/Hadar-SCE/Final_Project/Schedule_Application
             mkdir artifacts
             cp ${{ github.workspace }}/app-release.apk artifacts/
