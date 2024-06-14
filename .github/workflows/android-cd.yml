@@ -47,8 +47,6 @@ jobs:
 
       - name: Save artifact to local machine
         run: |
+            cd C:\Users\User\Desktop\Hadar-SCE\Final_Project\Schedule_Application
             mkdir artifacts
             cp ${{ github.workspace }}/app-release.apk artifacts/
-
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
