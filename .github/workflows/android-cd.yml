@@ -49,20 +49,9 @@ jobs:
         run: ls -al
       - name: List all files in the .github directory
         run: ls -al .github
-      - name: Check if firebase.json exists in root
-        run: if [ ! -f firebase.json ]; then echo "firebase.json not found in root directory"; exit 1; fi
-      - name: Check if firebase.json exists in .github
-        run: if [ ! -f .github/firebase.json ]; then echo "firebase.json not found in .github directory"; exit 1; fi
-      - name: Deploy to Firebase
+      - name: Deploy to Firebase from .github directory
+        working-directory: .github
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
-          if [ -f firebase.json ]; then
-            firebase deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}"
-          elif [ -f .github/firebase.json ]; then
-            cd .github
-            firebase deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}"
-          else
-            echo "firebase.json not found!"
-            exit 1
-          fi
+          firebase deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}"
