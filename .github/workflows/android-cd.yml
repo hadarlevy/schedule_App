@@ -45,6 +45,10 @@ jobs:
         run: ls -l
       - name: Display current directory
         run: pwd
+      - name: Change directory to root of repo
+        run: cd $GITHUB_WORKSPACE
+      - name: Verify firebase.json in root directory
+        run: ls -l $GITHUB_WORKSPACE
       - name: Deploy to Firebase
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
