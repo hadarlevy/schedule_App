@@ -36,7 +36,7 @@ jobs:
           name: app-release.apk
           path: app/build/outputs/apk/release/app-release.apk
 
-  distribute:
+  deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -44,6 +44,11 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: app-release.apk
+
+      - name: Save artifact to local machine
+        run: |
+            mkdir artifacts
+            cp ${{ github.workspace }}/app-release.apk artifacts/
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
