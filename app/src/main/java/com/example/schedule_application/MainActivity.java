@@ -26,7 +26,6 @@ import java.util.Calendar;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     FirebaseAuth auth;
-    TextView textView;
     CalendarView calendarView;
     FirebaseUser user;
     DrawerLayout drawerLayout;
@@ -61,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             View headerView = navigationView.getHeaderView(0);
             TextView navUserName = headerView.findViewById(R.id.nav_header_name);
             TextView navUserEmail = headerView.findViewById(R.id.nav_header_email);
-
             navUserName.setText(user.getDisplayName());
             navUserEmail.setText(user.getEmail());
 
