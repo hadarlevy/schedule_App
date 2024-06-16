@@ -1,6 +1,17 @@
 package com.example.schedule_application;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.CalendarView;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
@@ -8,20 +19,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.util.Log;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.CalendarView;
-import android.widget.TextView;
-import android.widget.Toast;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -32,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     NavigationView navigationView;
     ActionBarDrawerToggle toggle;
     Toolbar toolbar;
+    FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance(); // Initialize Firestore
         calendarView = findViewById(R.id.calendarView);
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
@@ -60,8 +74,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             View headerView = navigationView.getHeaderView(0);
             TextView navUserName = headerView.findViewById(R.id.nav_header_name);
             TextView navUserEmail = headerView.findViewById(R.id.nav_header_email);
-            navUserName.setText(user.getDisplayName());
-            navUserEmail.setText(user.getEmail());
+            // Fetch user details from Firestore
+            db.collection("users").document(user.getUid()).get()
+                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            if (documentSnapshot.exists()) {
+                                String firstName = documentSnapshot.getString("First name");
+                                String lastName = documentSnapshot.getString("Last name");
+                                String displayName = "Hello " +(firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
+                                navUserName.setText(displayName.trim());
+                            } else {
+                                navUserName.setText("Hello User");
+                            }
+                            navUserEmail.setText(user.getEmail());
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d("MainActivity", "Error fetching user details", e);
+                            navUserName.setText("Hello User");
+                            navUserEmail.setText(user.getEmail());
+                        }
+                    });
 
             // Check if the email is verified
             if (!user.isEmailVerified()) {
@@ -102,6 +138,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             // Handle rate us click
         } else if (id == R.id.nav_support) {
             // Handle support click
+        }else if (id == R.id.nav_logout) {
+            FirebaseAuth.getInstance().signOut();//sign out
+            Intent intent = new Intent(getApplicationContext(), Login.class);
+            startActivity(intent);
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -140,29 +180,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void showShiftDialog(Calendar date) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Set Shift for " + date.getTime().toString());
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_shift_options, null);
+        builder.setView(dialogView);
 
-        String[] shiftOptions = {"Possible and Prefer", "Possible", "Impossible"};
-        builder.setItems(shiftOptions, new DialogInterface.OnClickListener() {
+        TextView tvTitle = dialogView.findViewById(R.id.tv_shift_dialog_title);
+        tvTitle.setText("Set Shift for " + new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(date.getTime()));
+
+        RadioGroup rgShiftOptions = dialogView.findViewById(R.id.rg_shift_options);
+
+        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                // Handle the shift selection
-                switch (which) {
-                    case 0:
-                        Toast.makeText(MainActivity.this, "Selected: Possible and Prefer", Toast.LENGTH_SHORT).show();
-                        break;
-                    case 1:
-                        Toast.makeText(MainActivity.this, "Selected: Possible", Toast.LENGTH_SHORT).show();
-                        break;
-                    case 2:
-                        Toast.makeText(MainActivity.this, "Selected: Impossible", Toast.LENGTH_SHORT).show();
-                        break;
+                int selectedId = rgShiftOptions.getCheckedRadioButtonId();
+                String selectedOption = "Unknown";
+
+                if (selectedId == R.id.rb_possible_and_prefer) {
+                    selectedOption = "Possible and Prefer";
+                } else if (selectedId == R.id.rb_possible) {
+                    selectedOption = "Possible";
+                } else if (selectedId == R.id.rb_impossible) {
+                    selectedOption = "Impossible";
                 }
-                // Update the calendar view to show the checkmark (this requires additional code to update the UI)
+
+                // Save the selected option to Fire store
+                saveShiftOptionToDatabase(user.getEmail(), date, selectedOption);
             }
         });
 
-        builder.setPositiveButton("Close", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
@@ -170,5 +215,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         builder.show();
+    }
+
+    private void saveShiftOptionToDatabase(String email, Calendar date, String option) {
+        String formattedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date.getTime());
+        DocumentReference docRef = db.collection("shifts").document(email + "_" + formattedDate);
+
+        Map<String, Object> shiftData = new HashMap<>();
+        shiftData.put("email", email);
+        shiftData.put("date", formattedDate);
+        shiftData.put("option", option);
+
+        docRef.set(shiftData, SetOptions.merge())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(MainActivity.this, "Shift option saved", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(MainActivity.this, "Error saving shift option", Toast.LENGTH_SHORT).show();
+                        Log.d("MainActivity", "Error saving shift option", e);
+                    }
+                });
     }
 }
