@@ -8,7 +8,7 @@
     <string name="click_to_login">Already have an account? Sign In</string>
     <string name="click_to_register">Don\'t have an account? Sign Up</string>
     <string name="logout">Logout</string>
-    <string name="hello_user">Hello User!</string>
+    <string name="hello_user">Hello, User!</string>
     <string name="name">First Name</string>
     <string name="lastname">Last Name</string>
     <string name="phone">Phone Number</string>
@@ -34,4 +34,6 @@
     <string name="password_content_description">Your password</string>
     <string name="email_hint">Your email address</string>
     <string name="password_hint">Your password</string>
+    <string name="navigation_drawer_open">Open Navigation Drawer</string>
+    <string name="navigation_drawer_close">Close Navigation Drawer</string>
 </resources>

@@ -1,32 +1,38 @@
 package com.example.schedule_application;
 
+import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
 import java.util.Calendar;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
     FirebaseAuth auth;
-    Button button;
     TextView textView;
     CalendarView calendarView;
     FirebaseUser user;
+    DrawerLayout drawerLayout;
+    NavigationView navigationView;
+    ActionBarDrawerToggle toggle;
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,17 +40,30 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         auth = FirebaseAuth.getInstance();
-        button = findViewById(R.id.logout);
-        textView = findViewById(R.id.user_details);
         calendarView = findViewById(R.id.calendarView);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        toolbar = findViewById(R.id.tool_bar);
         user = auth.getCurrentUser(); // current user
+
+        setSupportActionBar(toolbar);
+        toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        navigationView.setNavigationItemSelectedListener(this);
 
         if (user == null) {
             Intent intent = new Intent(getApplicationContext(), Login.class);
             startActivity(intent);
             finish();
         } else {
-            textView.setText(user.getEmail());
+            View headerView = navigationView.getHeaderView(0);
+            TextView navUserName = headerView.findViewById(R.id.nav_header_name);
+            TextView navUserEmail = headerView.findViewById(R.id.nav_header_email);
+
+            navUserName.setText(user.getDisplayName());
+            navUserEmail.setText(user.getEmail());
 
             // Check if the email is verified
             if (!user.isEmailVerified()) {
@@ -52,21 +71,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FirebaseAuth.getInstance().signOut(); // sign out
-                Intent intent = new Intent(getApplicationContext(), Login.class);
-                startActivity(intent);
-                finish();
-            }
-        });
+        calendarView.setDate(Calendar.getInstance().getTimeInMillis(), false, true);
 
-        // Set the calendar view to show the current week
-        Calendar today = Calendar.getInstance();
-        calendarView.setDate(today.getTimeInMillis(), false, true);
-
-        // Handle day click events
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
@@ -75,6 +81,33 @@ public class MainActivity extends AppCompatActivity {
                 showShiftDialog(selectedDate);
             }
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (toggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.nav_home) {
+            // Handle home click
+        } else if (id == R.id.nav_schedule) {
+            // Handle schedule click
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else if (id == R.id.nav_rate_us) {
+            // Handle rate us click
+        } else if (id == R.id.nav_support) {
+            // Handle support click
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
     }
 
     private void showVerifyEmailDialog() {
