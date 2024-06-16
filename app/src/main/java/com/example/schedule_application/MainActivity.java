@@ -10,6 +10,8 @@ import android.widget.CalendarView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import androidx.annotation.NonNull;
@@ -112,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
                 Calendar selectedDate = Calendar.getInstance();
                 selectedDate.set(year, month, dayOfMonth);
-                showShiftDialog(selectedDate);
+                showShiftBottomSheetDialog(selectedDate);
             }
         });
     }
@@ -138,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             // Handle rate us click
         } else if (id == R.id.nav_support) {
             // Handle support click
-        }else if (id == R.id.nav_logout) {
+        } else if (id == R.id.nav_logout) {
             FirebaseAuth.getInstance().signOut();//sign out
             Intent intent = new Intent(getApplicationContext(), Login.class);
             startActivity(intent);
@@ -178,19 +180,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .show();
     }
 
-    private void showShiftDialog(Calendar date) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_shift_options, null);
-        builder.setView(dialogView);
+    private void showShiftBottomSheetDialog(Calendar date) {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.dialog_shift_options, null);
+        bottomSheetDialog.setContentView(bottomSheetView);
 
-        TextView tvTitle = dialogView.findViewById(R.id.tv_shift_dialog_title);
+        TextView tvTitle = bottomSheetView.findViewById(R.id.tv_shift_dialog_title);
         tvTitle.setText("Set Shift for " + new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(date.getTime()));
 
-        RadioGroup rgShiftOptions = dialogView.findViewById(R.id.rg_shift_options);
+        RadioGroup rgShiftOptions = bottomSheetView.findViewById(R.id.rg_shift_options);
 
-        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+        bottomSheetView.findViewById(R.id.btn_save).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onClick(View v) {
                 int selectedId = rgShiftOptions.getCheckedRadioButtonId();
                 String selectedOption = "Unknown";
 
@@ -204,17 +206,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 // Save the selected option to Fire store
                 saveShiftOptionToDatabase(user.getEmail(), date, selectedOption);
+                bottomSheetDialog.dismiss();
             }
         });
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        bottomSheetView.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
+            public void onClick(View v) {
+                bottomSheetDialog.dismiss();
             }
         });
 
-        builder.show();
+        bottomSheetDialog.show();
     }
 
     private void saveShiftOptionToDatabase(String email, Calendar date, String option) {
