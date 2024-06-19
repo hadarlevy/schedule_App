@@ -37,7 +37,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends NavBarActivity {
 
     FirebaseAuth auth;
     CalendarView calendarView;
@@ -51,62 +51,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        auth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance(); // Initialize Firestore
-        calendarView = findViewById(R.id.calendarView);
+        setContentView(R.layout.activity_main); // Set the correct layout here
+
+        toolbar = findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
+
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
-        toolbar = findViewById(R.id.tool_bar);
-        user = auth.getCurrentUser(); // current user
 
-        setSupportActionBar(toolbar);
         toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
         navigationView.setNavigationItemSelectedListener(this);
 
+        calendarView = findViewById(R.id.calendarView);
+        db = FirebaseFirestore.getInstance(); // Initialize Firestore
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser(); // current user
         if (user == null) {
             Intent intent = new Intent(getApplicationContext(), Login.class);
             startActivity(intent);
             finish();
-        } else {
-            View headerView = navigationView.getHeaderView(0);
-            TextView navUserName = headerView.findViewById(R.id.nav_header_name);
-            TextView navUserEmail = headerView.findViewById(R.id.nav_header_email);
-            // Fetch user details from Firestore
-            db.collection("users").document(user.getUid()).get()
-                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                        @Override
-                        public void onSuccess(DocumentSnapshot documentSnapshot) {
-                            if (documentSnapshot.exists()) {
-                                String firstName = documentSnapshot.getString("First name");
-                                String lastName = documentSnapshot.getString("Last name");
-                                String displayName = "Hello " +(firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
-                                navUserName.setText(displayName.trim());
-                            } else {
-                                navUserName.setText("Hello User");
-                            }
-                            navUserEmail.setText(user.getEmail());
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.d("MainActivity", "Error fetching user details", e);
-                            navUserName.setText("Hello User");
-                            navUserEmail.setText(user.getEmail());
-                        }
-                    });
-
-            // Check if the email is verified
-            if (!user.isEmailVerified()) {
-                showVerifyEmailDialog();
-            }
         }
-
+        if (!user.isEmailVerified()) {
+            showVerifyEmailDialog();
+        }
         calendarView.setDate(Calendar.getInstance().getTimeInMillis(), false, true);
 
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
@@ -125,29 +96,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.nav_home) {
-            // Handle home click
-        } else if (id == R.id.nav_schedule) {
-            // Handle schedule click
-            drawerLayout.closeDrawer(GravityCompat.START);
-        } else if (id == R.id.nav_rate_us) {
-            // Handle rate us click
-        } else if (id == R.id.nav_support) {
-            // Handle support click
-        } else if (id == R.id.nav_logout) {
-            FirebaseAuth.getInstance().signOut();//sign out
-            Intent intent = new Intent(getApplicationContext(), Login.class);
-            startActivity(intent);
-        }
-
-        drawerLayout.closeDrawer(GravityCompat.START);
-        return true;
     }
 
     private void showVerifyEmailDialog() {
