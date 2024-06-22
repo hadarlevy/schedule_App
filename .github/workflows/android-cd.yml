@@ -11,6 +11,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -39,14 +40,18 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v2
         with:
           name: app-release.apk
 
-      - name: Save artifact to local machine
-        run: |
-          mkdir artifacts
-          cp ${{ github.workspace }}/app-release.apk artifacts/
-          echo "Artifact saved to $(pwd)/artifacts/app-release.apk"
+      - name: Set up Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_CREDENTIAL_FILE_CONTENT }}
+          file: app/build/outputs/apk/release/app-release.apk
+          groups: testers
+          releaseNotes: "New release from GitHub Actions"
