@@ -50,6 +50,12 @@ jobs:
       - name: Verify Downloaded APK Path
         run: ls -R /home/runner/work/schedule_App/schedule_App
 
+      - name: Debug Secrets (will be removed later)
+        run: |
+          echo "App ID: ${{ secrets.FIREBASE_APP_ID }}"
+          echo "Service Credentials: ${{ secrets.FIREBASE_CREDENTIAL_FILE_CONTENT }}"
+          echo "Release APK Path: /home/runner/work/schedule_App/schedule_App/app-release.apk"
+
       - name: Set up Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
         with:
