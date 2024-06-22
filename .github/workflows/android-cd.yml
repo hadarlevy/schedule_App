@@ -50,11 +50,16 @@ jobs:
       - name: Verify Downloaded APK Path
         run: ls -R /home/runner/work/schedule_App/schedule_App
 
-      - name: Debug Secrets (will be removed later)
+      - name: Debug Secrets (to be removed later)
         run: |
           echo "App ID: ${{ secrets.FIREBASE_APP_ID }}"
           echo "Service Credentials: ${{ secrets.FIREBASE_CREDENTIAL_FILE_CONTENT }}"
           echo "Release APK Path: /home/runner/work/schedule_App/schedule_App/app-release.apk"
+
+      - name: Verify Service Account Permissions
+        run: |
+          gcloud auth activate-service-account --key-file <(echo "${{ secrets.FIREBASE_CREDENTIAL_FILE_CONTENT }}")
+          gcloud projects get-iam-policy ${{ secrets.FIREBASE_PROJECT_ID }} --flatten="bindings[].members" --format='table(bindings.role)' --filter="bindings.members:$(echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_EMAIL }}")"
 
       - name: Set up Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
