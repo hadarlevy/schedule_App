@@ -67,7 +67,8 @@ public abstract class NavBarActivity extends AppCompatActivity implements Naviga
             startActivity(intent);
             drawerLayout.closeDrawer(GravityCompat.START);
         } else if (id == R.id.nav_rate_us) {
-            // Handle rate us click
+            Intent intent = new Intent(this, RateUsActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_support) {
             // Handle support click
         } else if (id == R.id.nav_logout) {
