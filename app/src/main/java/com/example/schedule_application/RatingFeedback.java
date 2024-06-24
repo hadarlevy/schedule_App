@@ -1,6 +1,8 @@
 package com.example.schedule_application;
+
 public class RatingFeedback {
 
+    private String email;
     private float rating;
     private String feedback;
 
@@ -8,9 +10,14 @@ public class RatingFeedback {
         // Default constructor required for Firestore
     }
 
-    public RatingFeedback(float rating, String feedback) {
+    public RatingFeedback(String email, float rating, String feedback) {
+        this.email = email;
         this.rating = rating;
         this.feedback = feedback;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public float getRating() {

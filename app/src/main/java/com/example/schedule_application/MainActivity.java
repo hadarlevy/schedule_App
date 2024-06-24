@@ -11,6 +11,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -70,14 +72,15 @@ public class MainActivity extends NavBarActivity {
         db = FirebaseFirestore.getInstance(); // Initialize Firestore
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser(); // current user
+
         if (user == null) {
             Intent intent = new Intent(getApplicationContext(), Login.class);
             startActivity(intent);
             finish();
+        } else {
+            reloadUserAndCheckEmailVerification();
         }
-        if (!user.isEmailVerified()) {
-            showVerifyEmailDialog();
-        }
+
         calendarView.setDate(Calendar.getInstance().getTimeInMillis(), false, true);
 
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
@@ -89,6 +92,22 @@ public class MainActivity extends NavBarActivity {
             }
         });
     }
+
+    private void reloadUserAndCheckEmailVerification() {
+        user.reload().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    if (!user.isEmailVerified()) {
+                        showVerifyEmailDialog();
+                    }
+                } else {
+                    Log.e("MainActivity", "Failed to reload user.", task.getException());
+                }
+            }
+        });
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {

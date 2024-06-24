@@ -53,33 +53,27 @@ public class RateUsActivity extends NavBarActivity {
                 float rating = ratingBar.getRating();
                 String feedback = feedbackEditText.getText().toString().trim();
 
-                // Save rating and feedback to Firestore
-                saveRatingAndFeedback(rating, feedback);
-
-                // Show a toast message
-                Toast.makeText(RateUsActivity.this, "Rating and feedback submitted. Thank you!", Toast.LENGTH_SHORT).show();
+                if (user != null && user.getEmail() != null) {
+                    String email = user.getEmail();
+                    saveRatingAndFeedback(email, rating, feedback);
+                    Toast.makeText(RateUsActivity.this, "Rating and feedback submitted. Thank you!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(RateUsActivity.this, "User not logged in or email not available.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
 
-    private void saveRatingAndFeedback(float rating, String feedback) {
-        // Check if user is logged in
+    private void saveRatingAndFeedback(String email, float rating, String feedback) {
         if (user != null) {
-            // Construct a document reference to store user's rating and feedback
-            DocumentReference userRatingRef = db.collection("ratings")
-                    .document(user.getUid());
+            DocumentReference userRatingRef = db.collection("ratings").document(user.getUid());
+            RatingFeedback ratingFeedback = new RatingFeedback(email, rating, feedback);
 
-            // Create a data object with rating and feedback
-            RatingFeedback ratingFeedback = new RatingFeedback(rating, feedback);
-
-            // Set the data to Firestore
             userRatingRef.set(ratingFeedback)
                     .addOnSuccessListener(aVoid -> {
                         // Rating and feedback saved successfully
-                        // You can add any additional logic here if needed
                     })
                     .addOnFailureListener(e -> {
-                        // Handle any errors
                         Toast.makeText(RateUsActivity.this, "Failed to save rating and feedback: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
         }

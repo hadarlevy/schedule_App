@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/colorPrimary"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -9,6 +10,7 @@
         android:id="@+id/tv_shift_dialog_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@color/white"
         android:textSize="18sp"
         android:textStyle="bold"
         android:paddingBottom="8dp" />
@@ -22,18 +24,25 @@
             android:id="@+id/rb_possible_and_prefer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+
             android:text="Possible and Prefer" />
 
         <RadioButton
             android:id="@+id/rb_possible"
+            android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/white"
             android:text="Possible" />
 
         <RadioButton
             android:id="@+id/rb_impossible"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textStyle="bold"
             android:text="Impossible" />
     </RadioGroup>
 
@@ -48,8 +57,9 @@
             android:layout_width="0px"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:textColor="@color/black"
             android:layout_marginEnd="170dp"
-            android:backgroundTint="@color/black"
+            android:backgroundTint="@color/white"
             android:text="Cancel" />
 
         <Button
