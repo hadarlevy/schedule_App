@@ -1,36 +1,41 @@
 package com.example.schedule_application;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
-import androidx.drawerlayout.widget.DrawerLayout;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import android.view.Gravity;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 public class HomeActivity extends NavBarActivity {
 
     private static final String TAG = "HomeActivity";
 
     private TextView tvUserName, tvUserEmail, tvUserPhone;
+    private EditText etUserName, etUserPhone;
     private LinearLayout shiftsContainer;
+    private Button editUserDetailsButton, saveUserDetailsButton, viewShiftsButton, rateUsButton;
     private List<Shift> shiftList;
-    private DrawerLayout drawerLayout;
-    private ActionBarDrawerToggle toggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,11 +57,46 @@ public class HomeActivity extends NavBarActivity {
         tvUserName = findViewById(R.id.tvUserName);
         tvUserEmail = findViewById(R.id.tvUserEmail);
         tvUserPhone = findViewById(R.id.tvUserPhone);
+        etUserName = findViewById(R.id.etUserName);
+        etUserPhone = findViewById(R.id.etUserPhone);
         shiftsContainer = findViewById(R.id.shiftsContainer);
+        editUserDetailsButton = findViewById(R.id.editUserDetailsButton);
+        saveUserDetailsButton = findViewById(R.id.saveUserDetailsButton);
+        viewShiftsButton = findViewById(R.id.viewShiftsButton);
+        rateUsButton = findViewById(R.id.rateUsButton);
         shiftList = new ArrayList<>();
+
+        editUserDetailsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleEditMode(true);
+            }
+        });
+
+        saveUserDetailsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveUserDetails();
+            }
+        });
+
+        viewShiftsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(HomeActivity.this, ViewShiftsActivity.class));
+            }
+        });
+
+        rateUsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(HomeActivity.this, RateUsActivity.class));
+            }
+        });
 
         if (user != null) {
             tvUserEmail.setText(user.getEmail());
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
             db.collection("users").document(user.getUid()).get()
                     .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                         @Override
@@ -68,6 +108,8 @@ public class HomeActivity extends NavBarActivity {
                                 String displayName = firstName + " " + lastName;
                                 tvUserName.setText(displayName);
                                 tvUserPhone.setText(phoneNumber);
+                                etUserName.setText(displayName);
+                                etUserPhone.setText(phoneNumber);
                             } else {
                                 Log.d(TAG, "No such document");
                             }
@@ -87,6 +129,7 @@ public class HomeActivity extends NavBarActivity {
     }
 
     private void loadUserShifts() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("shifts")
                 .whereEqualTo("email", user.getEmail())
                 .whereIn("option", Arrays.asList("Possible", "Possible and Prefer"))
@@ -156,5 +199,113 @@ public class HomeActivity extends NavBarActivity {
 
         // Add shiftLayout to shiftsContainer
         shiftsContainer.addView(shiftLayout);
+    }
+
+    private void toggleEditMode(boolean editMode) {
+        if (editMode) {
+            tvUserName.setVisibility(View.GONE);
+            tvUserPhone.setVisibility(View.GONE);
+            etUserName.setVisibility(View.VISIBLE);
+            etUserPhone.setVisibility(View.VISIBLE);
+            saveUserDetailsButton.setVisibility(View.VISIBLE);
+            editUserDetailsButton.setVisibility(View.GONE);
+            viewShiftsButton.setVisibility(View.GONE);
+            rateUsButton.setVisibility(View.GONE);
+        } else {
+            tvUserName.setVisibility(View.VISIBLE);
+            tvUserPhone.setVisibility(View.VISIBLE);
+            etUserName.setVisibility(View.GONE);
+            etUserPhone.setVisibility(View.GONE);
+            saveUserDetailsButton.setVisibility(View.GONE);
+            editUserDetailsButton.setVisibility(View.VISIBLE);
+            viewShiftsButton.setVisibility(View.VISIBLE);
+            rateUsButton.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void saveUserDetails() {
+        String newName = etUserName.getText().toString().trim().replaceAll("\\s+", " ");
+        String newPhone = etUserPhone.getText().toString().trim();
+
+        if (validateName(newName) && validatePhone(newPhone)) {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("users").document(user.getUid())
+                    .update("First name", getFirstName(newName), "Last name", getLastName(newName), "Phone", newPhone)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            toggleEditMode(false);
+                            Toast.makeText(HomeActivity.this, "Details updated successfully", Toast.LENGTH_SHORT).show();
+                            tvUserName.setText(newName);
+                            tvUserPhone.setText(newPhone);
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(HomeActivity.this, "Failed to update details: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "Error updating details", e);
+                        }
+                    });
+        }
+    }
+
+    private boolean validateName(String name) {
+        // Validate name contains only English letters and exactly one space separating first name and last name
+        if (name.isEmpty()) {
+            Toast.makeText(this, "Name cannot be empty", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (!name.contains(" ")) {
+            Toast.makeText(this, "Please provide both first and last name separated by a space", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        String[] parts = name.split(" ");
+        if (parts.length != 2) {
+            Toast.makeText(this, "Name should only contain one space", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        String firstName = parts[0];
+        String lastName = parts[1];
+
+        if (firstName.isEmpty()) {
+            Toast.makeText(this, "First name cannot be empty", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (lastName.isEmpty()) {
+            Toast.makeText(this, "Last name cannot be empty", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (!firstName.matches("[a-zA-Z]+") || !lastName.matches("[a-zA-Z]+")) {
+            Toast.makeText(this, "Name must contain only English letters", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean validatePhone(String phone) {
+        // Validate phone number has exactly 10 digits
+        if (!phone.matches("\\d{10}")) {
+            Toast.makeText(this, "Phone number must have exactly 10 digits", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+
+
+    private String getFirstName(String fullName) {
+        int index = fullName.indexOf(' ');
+        return (index == -1) ? fullName : fullName.substring(0, index);
+    }
+
+    private String getLastName(String fullName) {
+        int index = fullName.indexOf(' ');
+        return (index == -1) ? "" : fullName.substring(index + 1);
     }
 }
