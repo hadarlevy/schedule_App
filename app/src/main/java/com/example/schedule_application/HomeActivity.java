@@ -7,7 +7,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -20,11 +19,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class HomeActivity extends NavBarActivity {
@@ -83,7 +79,11 @@ public class HomeActivity extends NavBarActivity {
         viewShiftsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(HomeActivity.this, ViewShiftsActivity.class));
+                Intent intent = new Intent(HomeActivity.this, ViewShiftsActivity.class);
+                if (user != null) {
+                    intent.putExtra("USER_EMAIL", user.getEmail());
+                }
+                startActivity(intent);
             }
         });
 
@@ -122,83 +122,9 @@ public class HomeActivity extends NavBarActivity {
                         }
                     });
 
-            loadUserShifts();
         } else {
             Log.d(TAG, "User is null");
         }
-    }
-
-    private void loadUserShifts() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("shifts")
-                .whereEqualTo("email", user.getEmail())
-                .whereIn("option", Arrays.asList("Possible", "Possible and Prefer"))
-                .get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        shiftList.clear();
-                        shiftsContainer.removeAllViews();
-                        if (!queryDocumentSnapshots.isEmpty()) {
-                            int shiftNumber = 1;
-                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                                Shift shift = documentSnapshot.toObject(Shift.class);
-                                shiftList.add(shift);
-                                addShiftView(shift, shiftNumber);
-                                shiftNumber++;
-                            }
-                        } else {
-                            Log.d(TAG, "No shifts found");
-                        }
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(HomeActivity.this, "Error loading shifts", Toast.LENGTH_SHORT).show();
-                        Log.d(TAG, "Error loading shifts", e);
-                    }
-                });
-    }
-
-    private void addShiftView(Shift shift, int shiftNumber) {
-        // Create a LinearLayout to hold the shift details
-        LinearLayout shiftLayout = new LinearLayout(this);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        layoutParams.setMargins(32, 0, 32, 16); // Adjusting margins to center the item and add spacing
-
-        shiftLayout.setLayoutParams(layoutParams);
-        shiftLayout.setOrientation(LinearLayout.VERTICAL);
-        shiftLayout.setGravity(Gravity.CENTER_HORIZONTAL);
-        shiftLayout.setPadding(16, 16, 16, 16);
-        shiftLayout.setBackgroundColor(getResources().getColor(R.color.gray));
-
-        // Create and add TextView for shift number
-        TextView shiftNoView = new TextView(this);
-        shiftNoView.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
-        shiftNoView.setText("Shift No. " + shiftNumber);
-        shiftNoView.setTextSize(18);
-        shiftNoView.setGravity(Gravity.CENTER);
-
-        // Create and add TextView for shift date
-        TextView shiftDateView = new TextView(this);
-        shiftDateView.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
-        shiftDateView.setText(shift.getDate());
-        shiftDateView.setTextSize(14);
-        shiftDateView.setGravity(Gravity.CENTER);
-
-        // Add TextViews to shiftLayout
-        shiftLayout.addView(shiftNoView);
-        shiftLayout.addView(shiftDateView);
-
-        // Add shiftLayout to shiftsContainer
-        shiftsContainer.addView(shiftLayout);
     }
 
     private void toggleEditMode(boolean editMode) {
@@ -251,7 +177,6 @@ public class HomeActivity extends NavBarActivity {
     }
 
     private boolean validateName(String name) {
-        // Validate name contains only English letters and exactly one space separating first name and last name
         if (name.isEmpty()) {
             Toast.makeText(this, "Name cannot be empty", Toast.LENGTH_SHORT).show();
             return false;
@@ -290,14 +215,12 @@ public class HomeActivity extends NavBarActivity {
     }
 
     private boolean validatePhone(String phone) {
-        // Validate phone number has exactly 10 digits
         if (!phone.matches("\\d{10}")) {
             Toast.makeText(this, "Phone number must have exactly 10 digits", Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;
     }
-
 
     private String getFirstName(String fullName) {
         int index = fullName.indexOf(' ');

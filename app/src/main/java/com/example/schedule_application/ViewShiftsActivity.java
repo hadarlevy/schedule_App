@@ -1,23 +1,36 @@
 package com.example.schedule_application;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class ViewShiftsActivity extends AppCompatActivity {
 
+    private static final String TAG = "ViewShiftsActivity";
+
     private LinearLayout shiftsContainer;
-    private FirebaseFirestore db;
-    private FirebaseUser user;
+    private List<Shift> shiftList;
+    private String userEmail;
+    private ImageButton backButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,51 +38,78 @@ public class ViewShiftsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_view_shifts);
 
         shiftsContainer = findViewById(R.id.shiftsContainer);
+        backButton = findViewById(R.id.backButton);
+        shiftList = new ArrayList<>();
 
-        db = FirebaseFirestore.getInstance();
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        user = auth.getCurrentUser();
-
-        loadCurrentWeekShifts();
-    }
-
-    private void loadCurrentWeekShifts() {
-        if (user != null) {
-            Calendar calendar = Calendar.getInstance();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
-            // Get start and end dates of the current week
-            calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
-            String startDate = sdf.format(calendar.getTime());
-            calendar.add(Calendar.DAY_OF_WEEK, 6);
-            String endDate = sdf.format(calendar.getTime());
-
-            db.collection("shifts")
-                    .whereEqualTo("email", user.getEmail())
-                    .whereGreaterThanOrEqualTo("date", startDate)
-                    .whereLessThanOrEqualTo("date", endDate)
-                    .orderBy("date", Query.Direction.ASCENDING)
-                    .get()
-                    .addOnSuccessListener(queryDocumentSnapshots -> {
-                        shiftsContainer.removeAllViews();
-                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            Shift shift = documentSnapshot.toObject(Shift.class);
-                            addShiftView(shift);
-                        }
-                    });
+        userEmail = getIntent().getStringExtra("USER_EMAIL");
+        if (userEmail != null) {
+            loadUserShifts(userEmail);
+        } else {
+            Log.d(TAG, "User email is null");
         }
+
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
-    private void addShiftView(Shift shift) {
-        TextView shiftView = new TextView(this);
-        shiftView.setText(String.format("Shift: %s\nDate: %s", shift.getOption(), shift.getDate()));
-        shiftView.setPadding(16, 16, 16, 16);
-        shiftView.setBackgroundResource(R.color.gray);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.setMargins(16, 16, 16, 16);
-        shiftView.setLayoutParams(params);
+    private void loadUserShifts(String email) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("shifts")
+                .whereEqualTo("email", email)
+                .whereIn("option", Arrays.asList("Possible", "Possible and Prefer"))
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        shiftList.clear();
+                        shiftsContainer.removeAllViews();
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            int shiftNumber = 1;
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                Shift shift = documentSnapshot.toObject(Shift.class);
+                                shiftList.add(shift);
+                                addShiftView(shift, shiftNumber);
+                                shiftNumber++;
+                            }
+                        } else {
+                            showNoShiftsMessage();
+                            Log.d(TAG, "No shifts found");
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(ViewShiftsActivity.this, "Error loading shifts", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "Error loading shifts", e);
+                    }
+                });
+    }
+
+    private void addShiftView(Shift shift, int shiftNumber) {
+        View shiftView = LayoutInflater.from(this).inflate(R.layout.shift_item, shiftsContainer, false);
+
+        TextView shiftNoView = shiftView.findViewById(R.id.shift_no);
+        TextView shiftDateView = shiftView.findViewById(R.id.shift_date);
+
+        shiftNoView.setText("Shift no: " + shiftNumber);
+        shiftDateView.setText(shift.getDate());
+
         shiftsContainer.addView(shiftView);
+    }
+
+    private void showNoShiftsMessage() {
+        TextView noShiftsView = new TextView(this);
+        noShiftsView.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+        noShiftsView.setText("There are no shifts for the week.");
+        noShiftsView.setTextSize(18);
+        noShiftsView.setGravity(Gravity.CENTER);
+        shiftsContainer.addView(noShiftsView);
     }
 }
