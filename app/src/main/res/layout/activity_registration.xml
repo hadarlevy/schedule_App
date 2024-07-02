@@ -20,7 +20,7 @@
             android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="135dp" />
+            android:layout_marginTop="100dp" />
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/name"
@@ -111,15 +111,37 @@
             android:textSize="16sp"
             />
 
+        <!-- Admin Code TextInput (hidden by default) -->
+        <TextView
+            android:id="@+id/adminCodeLabel"
+            android:text="Admin Code"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:visibility="gone" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/adminCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/light_gray"
+            android:hint="Enter Admin Code"
+            android:minHeight="48dp"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:visibility="gone" />
+
         <!-- Agree to Terms CheckBox -->
         <CheckBox
             android:id="@+id/termsCheckBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/agree_terms"
+            android:text="@string/admin"
             android:textColor="@color/textColorSecondary"
             android:layout_marginTop="16dp"
-            android:contentDescription="@string/terms_checkbox_content_description" />
+            android:contentDescription="@string/admin_checkbox_content_description" />
 
         <!-- Register Button -->
         <Button

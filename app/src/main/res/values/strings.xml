@@ -21,12 +21,15 @@
     <string name="first_name">First Name</string>
     <string name="last_name">Last Name</string>
     <string name="already_have_account">Already have an account? Sign In</string>
-    <string name="agree_terms">I agree to the Terms and Conditions</string>
+    <string name="admin">Register as administrator</string>
     <string name="company_logo_description">Company Logo</string>
     <string name="name_content_description">Your First name</string>
     <string name="lastname_content_description">Your Last name</string>
     <string name="phone_content_description">Your Phone number</string>
-    <string name="terms_checkbox_content_description">Terms and Conditions Checkbox</string>
+    <string name="admin_checkbox_content_description">admin Checkbox</string>
+    <string name="admin_code">Admin Code</string>
+    <string name="admin_code_hint">Enter admin code</string>
+    <string name="admin_code_incorrect">Incorrect admin code</string>
     <string name="register_button_content_description">Register Button</string>
     <string name="progress_bar_content_description">Progress Bar</string>
     <string name="login_now_textview_content_description">Login Now TextView</string>

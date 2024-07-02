@@ -27,11 +27,15 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class Login extends AppCompatActivity {
     TextInputEditText editTextEmail, editTextPassword;
     Button buttonLogin;
     FirebaseAuth mAuth;
+    FirebaseFirestore fStore;
     ProgressBar progressBar;
     TextView textview, forgotTextLink;
 
@@ -50,6 +54,7 @@ public class Login extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        fStore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         editTextEmail = findViewById(R.id.email);
         editTextPassword = findViewById(R.id.password);
@@ -134,23 +139,42 @@ public class Login extends AppCompatActivity {
                         .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
-                                // if task successful means if the user has successfully logged in
                                 if (task.isSuccessful()) {
-                                    Toast.makeText(getApplicationContext(), "Login Successfully", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                    startActivity(intent);
-                                    finish();//close the login and open the main activity
+                                    FirebaseUser user = mAuth.getCurrentUser();
+                                    if (user != null) {
+                                        checkAdmin(user);
+                                    }
                                 } else {
-                                    Toast.makeText(Login.this, "Authentication failed.",
-                                            Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Login.this, "Authentication Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                     progressBar.setVisibility(View.GONE);
                                 }
                             }
                         });
-
-
-
             }
         });
     }
+
+    private void checkAdmin(FirebaseUser user) {
+        DocumentReference docRef = fStore.collection("Manager").document(user.getUid());
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        // User is admin
+                        startActivity(new Intent(Login.this, AdminHomeActivity.class));
+                    } else {
+                        // User is not admin
+                        startActivity(new Intent(Login.this, MainActivity.class));
+                    }
+                    finish(); // Close the login activity
+                } else {
+                    Toast.makeText(Login.this, "Failed to check admin status: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
 }
