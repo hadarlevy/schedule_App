@@ -36,6 +36,11 @@ android {
             )
         }
     }
+    packagingOptions {
+        exclude 'META-INF/NOTICE.md'
+        exclude 'META-INF/LICENSE.md' // Add this line to exclude the LICENSE.md file
+
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -44,6 +49,7 @@ android {
     lintOptions {
         abortOnError false // Allows build to succeed even if there are lint errors
     }
+
 }
 
 dependencies {
@@ -64,6 +70,9 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
+    implementation 'com.sun.mail:android-mail:1.6.7'
+    implementation 'com.sun.mail:android-activation:1.6.7'
+
 }
 
 configurations.configureEach {
