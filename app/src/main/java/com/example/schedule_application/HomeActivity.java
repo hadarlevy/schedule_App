@@ -63,16 +63,10 @@ public class HomeActivity extends NavBarActivity {
         editUserDetailsLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleEditMode(true);
+                startActivity(new Intent(HomeActivity.this, EditUserDetailsActivity.class));
             }
         });
 
-        saveUserDetailsLink.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveUserDetails();
-            }
-        });
 
         viewShiftsLink.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -125,108 +119,5 @@ public class HomeActivity extends NavBarActivity {
         }
     }
 
-    private void toggleEditMode(boolean editMode) {
-        if (editMode) {
-            tvUserName.setVisibility(View.GONE);
-            tvUserPhone.setVisibility(View.GONE);
-            etUserName.setVisibility(View.VISIBLE);
-            etUserPhone.setVisibility(View.VISIBLE);
-            saveUserDetailsLink.setVisibility(View.VISIBLE);
-            editUserDetailsLink.setVisibility(View.GONE);
-            viewShiftsLink.setVisibility(View.GONE);
-            rateUsLink.setVisibility(View.GONE);
-        } else {
-            tvUserName.setVisibility(View.VISIBLE);
-            tvUserPhone.setVisibility(View.VISIBLE);
-            etUserName.setVisibility(View.GONE);
-            etUserPhone.setVisibility(View.GONE);
-            saveUserDetailsLink.setVisibility(View.GONE);
-            editUserDetailsLink.setVisibility(View.VISIBLE);
-            viewShiftsLink.setVisibility(View.VISIBLE);
-            rateUsLink.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void saveUserDetails() {
-        String newName = etUserName.getText().toString().trim().replaceAll("\\s+", " ");
-        String newPhone = etUserPhone.getText().toString().trim();
-
-        if (validateName(newName) && validatePhone(newPhone)) {
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            db.collection("users").document(user.getUid())
-                    .update("First name", getFirstName(newName), "Last name", getLastName(newName), "Phone", newPhone)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            toggleEditMode(false);
-                            Toast.makeText(HomeActivity.this, "Details updated successfully", Toast.LENGTH_SHORT).show();
-                            tvUserName.setText(newName);
-                            tvUserPhone.setText(newPhone);
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(HomeActivity.this, "Failed to update details: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            Log.d(TAG, "Error updating details", e);
-                        }
-                    });
-        }
-    }
-
-    private boolean validateName(String name) {
-        if (name.isEmpty()) {
-            Toast.makeText(this, "Name cannot be empty", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        if (!name.contains(" ")) {
-            Toast.makeText(this, "Please provide both first and last name separated by a space", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        String[] parts = name.split(" ");
-        if (parts.length != 2) {
-            Toast.makeText(this, "Name should only contain one space", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        String firstName = parts[0];
-        String lastName = parts[1];
-
-        if (firstName.isEmpty()) {
-            Toast.makeText(this, "First name cannot be empty", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        if (lastName.isEmpty()) {
-            Toast.makeText(this, "Last name cannot be empty", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        if (!firstName.matches("[a-zA-Z]+") || !lastName.matches("[a-zA-Z]+")) {
-            Toast.makeText(this, "Name must contain only English letters", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean validatePhone(String phone) {
-        if (!phone.matches("\\d{10}")) {
-            Toast.makeText(this, "Phone number must have exactly 10 digits", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        return true;
-    }
-
-    private String getFirstName(String fullName) {
-        int index = fullName.indexOf(' ');
-        return (index == -1) ? fullName : fullName.substring(0, index);
-    }
-
-    private String getLastName(String fullName) {
-        int index = fullName.indexOf(' ');
-        return (index == -1) ? "" : fullName.substring(index + 1);
-    }
 }
+
