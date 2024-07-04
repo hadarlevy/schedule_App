@@ -14,9 +14,9 @@
             android:id="@+id/userDetailsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:gravity="center"
-            android:padding="7dp">
+            android:orientation="vertical"
+            android:padding="16dp">
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/tool_bar"
@@ -36,10 +36,10 @@
                 android:id="@+id/tvUserName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="38dp"
                 android:text="User Name"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginTop="38dp" />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvUserEmail"
@@ -71,37 +71,155 @@
                 android:inputType="phone"
                 android:visibility="gone" />
 
-            <Button
-                android:id="@+id/editUserDetailsButton"
-                android:layout_width="wrap_content"
+            <!-- Edit Details Link -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Edit Details"
-                android:visibility="visible" />
+                android:layout_marginTop="65dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:background="@drawable/box_border"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="horizontal"
+                android:padding="16dp">
 
-            <Button
-                android:id="@+id/saveUserDetailsButton"
-                android:layout_width="wrap_content"
+                <ImageView
+                    android:id="@+id/editUserDetailsIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_edit"/>
+
+                <TextView
+                    android:id="@+id/editUserDetailsLink"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="17dp"
+                    android:layout_weight="1"
+                    android:text="Edit Details"
+                    android:textColor="@color/textColorSecondary"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_arrow_forward" />
+            </LinearLayout>
+
+            <!-- Save Details Link -->
+            <LinearLayout
+                android:id="@+id/saveUserDetailsContainer"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Save Details"
-                android:visibility="gone" />
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:background="@drawable/box_border"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:visibility="gone">
 
-            <Button
-                android:id="@+id/viewShiftsButton"
-                android:layout_width="wrap_content"
+                <ImageView
+                    android:id="@+id/saveUserDetailsIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_save" />
+
+                <TextView
+                    android:id="@+id/saveUserDetailsLink"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="Save Details"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_arrow_forward"/>
+            </LinearLayout>
+
+            <!-- View Shifts Link -->
+            <LinearLayout
+                android:id="@+id/viewShiftsLinkContainer"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="View Shifts"
-                android:layout_marginTop="16dp" />
+                android:layout_marginTop="28dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:background="@drawable/box_border"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="horizontal"
+                android:padding="16dp">
 
-            <Button
-                android:id="@+id/rateUsButton"
-                android:layout_width="wrap_content"
+                <ImageView
+                    android:id="@+id/viewShiftsIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_view_list"/>
+
+                <TextView
+                    android:id="@+id/viewShiftsLink"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="View Shifts"
+                    android:textColor="@color/textColorSecondary"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_arrow_forward" />
+            </LinearLayout>
+
+            <!-- Rate Us Link -->
+            <LinearLayout
+                android:id="@+id/rateUsLinkContainer"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Rate Us"
-                android:layout_marginTop="16dp" />
+                android:layout_marginTop="28dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:background="@drawable/box_border"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="horizontal"
+                android:padding="16dp">
 
+                <ImageView
+                    android:id="@+id/rateUsIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_star" />
+
+                <TextView
+                    android:id="@+id/rateUsLink"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="Rate Us"
+                    android:textColor="@color/textColorSecondary"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_arrow_forward"/>
+            </LinearLayout>
         </LinearLayout>
 
-        <!-- ScrollView and shiftsContainer remain unchanged -->
         <ScrollView
             android:id="@+id/scrollViewShifts"
             android:layout_width="match_parent"
@@ -111,17 +229,14 @@
             android:fillViewport="true"
             android:contentDescription="List of Shifts">
 
-            <!-- Content inside ScrollView -->
             <LinearLayout
                 android:id="@+id/shiftsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:padding="16dp" />
-
+                android:padding="16dp"/>
         </ScrollView>
-
     </RelativeLayout>
 
     <com.google.android.material.navigation.NavigationView
@@ -133,5 +248,4 @@
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/drawer_menu"
         app:itemIconSize="24dp" />
-
 </androidx.drawerlayout.widget.DrawerLayout>

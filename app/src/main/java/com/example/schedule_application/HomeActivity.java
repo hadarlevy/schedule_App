@@ -7,9 +7,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -30,7 +28,7 @@ public class HomeActivity extends NavBarActivity {
     private TextView tvUserName, tvUserEmail, tvUserPhone;
     private EditText etUserName, etUserPhone;
     private LinearLayout shiftsContainer;
-    private Button editUserDetailsButton, saveUserDetailsButton, viewShiftsButton, rateUsButton;
+    private TextView editUserDetailsLink, saveUserDetailsLink, viewShiftsLink, rateUsLink;
     private List<Shift> shiftList;
 
     @Override
@@ -56,27 +54,27 @@ public class HomeActivity extends NavBarActivity {
         etUserName = findViewById(R.id.etUserName);
         etUserPhone = findViewById(R.id.etUserPhone);
         shiftsContainer = findViewById(R.id.shiftsContainer);
-        editUserDetailsButton = findViewById(R.id.editUserDetailsButton);
-        saveUserDetailsButton = findViewById(R.id.saveUserDetailsButton);
-        viewShiftsButton = findViewById(R.id.viewShiftsButton);
-        rateUsButton = findViewById(R.id.rateUsButton);
+        editUserDetailsLink = findViewById(R.id.editUserDetailsLink);
+        saveUserDetailsLink = findViewById(R.id.saveUserDetailsLink);
+        viewShiftsLink = findViewById(R.id.viewShiftsLink);
+        rateUsLink = findViewById(R.id.rateUsLink);
         shiftList = new ArrayList<>();
 
-        editUserDetailsButton.setOnClickListener(new View.OnClickListener() {
+        editUserDetailsLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleEditMode(true);
             }
         });
 
-        saveUserDetailsButton.setOnClickListener(new View.OnClickListener() {
+        saveUserDetailsLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 saveUserDetails();
             }
         });
 
-        viewShiftsButton.setOnClickListener(new View.OnClickListener() {
+        viewShiftsLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(HomeActivity.this, ViewShiftsActivity.class);
@@ -87,7 +85,7 @@ public class HomeActivity extends NavBarActivity {
             }
         });
 
-        rateUsButton.setOnClickListener(new View.OnClickListener() {
+        rateUsLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(HomeActivity.this, RateUsActivity.class));
@@ -133,19 +131,19 @@ public class HomeActivity extends NavBarActivity {
             tvUserPhone.setVisibility(View.GONE);
             etUserName.setVisibility(View.VISIBLE);
             etUserPhone.setVisibility(View.VISIBLE);
-            saveUserDetailsButton.setVisibility(View.VISIBLE);
-            editUserDetailsButton.setVisibility(View.GONE);
-            viewShiftsButton.setVisibility(View.GONE);
-            rateUsButton.setVisibility(View.GONE);
+            saveUserDetailsLink.setVisibility(View.VISIBLE);
+            editUserDetailsLink.setVisibility(View.GONE);
+            viewShiftsLink.setVisibility(View.GONE);
+            rateUsLink.setVisibility(View.GONE);
         } else {
             tvUserName.setVisibility(View.VISIBLE);
             tvUserPhone.setVisibility(View.VISIBLE);
             etUserName.setVisibility(View.GONE);
             etUserPhone.setVisibility(View.GONE);
-            saveUserDetailsButton.setVisibility(View.GONE);
-            editUserDetailsButton.setVisibility(View.VISIBLE);
-            viewShiftsButton.setVisibility(View.VISIBLE);
-            rateUsButton.setVisibility(View.VISIBLE);
+            saveUserDetailsLink.setVisibility(View.GONE);
+            editUserDetailsLink.setVisibility(View.VISIBLE);
+            viewShiftsLink.setVisibility(View.VISIBLE);
+            rateUsLink.setVisibility(View.VISIBLE);
         }
     }
 
