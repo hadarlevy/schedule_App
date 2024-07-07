@@ -42,14 +42,13 @@ public class Login extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        // Check if user is already sign in
+        // Check if user is already signed in
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null){
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            startActivity(intent);
-            finish();//close the login and open the main activity
+        if (currentUser != null) {
+            checkAdmin(currentUser);
         }
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,82 +58,73 @@ public class Login extends AppCompatActivity {
         editTextEmail = findViewById(R.id.email);
         editTextPassword = findViewById(R.id.password);
         buttonLogin = findViewById(R.id.btn_login);
-        progressBar=findViewById(R.id.progressBar);
+        progressBar = findViewById(R.id.progressBar);
         textview = findViewById(R.id.registerNow);
         forgotTextLink = findViewById(R.id.ForgotPassword);
 
-        //open the page
         textview.setOnClickListener(new View.OnClickListener() {
-            // this function says "if u click on the button that navigate to the registration page then call the registration class"
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), Registration.class);// navigate to the registration page
+                Intent intent = new Intent(getApplicationContext(), Registration.class);
                 startActivity(intent);
                 finish();
             }
         });
+
         forgotTextLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 EditText resetMail = new EditText(v.getContext());
                 AlertDialog.Builder passwordResetDialog = new AlertDialog.Builder(v.getContext());
                 passwordResetDialog.setTitle("Reset Password ?");
-                passwordResetDialog.setMessage("Enter Your Email To Received Reset Link");
+                passwordResetDialog.setMessage("Enter Your Email To Receive Reset Link");
                 passwordResetDialog.setView(resetMail);
-                //now we will have 2 option if the user clicked yes or no
                 passwordResetDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        //extract the email and send reset link
                         String mail = resetMail.getText().toString();
                         mAuth.sendPasswordResetEmail(mail).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
-                            public void onSuccess(Void Avoid) {
-                                Toast.makeText(Login.this, "\"Resat Link Send To Your Email",
-                                        Toast.LENGTH_SHORT).show();
+                            public void onSuccess(Void avoid) {
+                                Toast.makeText(Login.this, "Reset Link Sent To Your Email", Toast.LENGTH_SHORT).show();
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(Login.this, "Error ! Reset Link is Not Send" + e.getMessage(),Toast.LENGTH_SHORT).show();
+                                Toast.makeText(Login.this, "Error! Reset Link Not Sent " + e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
                 });
-                passwordResetDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
-                });
-                //display the other dialog
+                passwordResetDialog.setNegativeButton("No", null);
                 passwordResetDialog.create().show();
-
             }
         });
-        //this function work when the user click on the button of "log in"
+
         buttonLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 progressBar.setVisibility(View.VISIBLE);
-                String email, password;
+                String email = editTextEmail.getText().toString();
+                String password = editTextPassword.getText().toString();
 
-                email = String.valueOf(editTextEmail.getText());
-                password = String.valueOf(editTextPassword.getText());
-                if(TextUtils.isEmpty(email)) {
+                if (TextUtils.isEmpty(email)) {
                     Toast.makeText(Login.this, "Enter email", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
-                if(TextUtils.isEmpty(password)) {
+                if (TextUtils.isEmpty(password)) {
                     Toast.makeText(Login.this, "Enter password", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
-                if(password.length()<6){
+
+                if (password.length() < 6) {
                     editTextPassword.setError("Password must be 6 characters or more");
+                    progressBar.setVisibility(View.GONE);
+                    return;
                 }
-                // after the user clicked then the progressbar will be visible
-                progressBar.setVisibility(View.VISIBLE);
-                //this function has taken from the firebase web its for the data
+
                 mAuth.signInWithEmailAndPassword(email, password)
                         .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override
@@ -176,5 +166,4 @@ public class Login extends AppCompatActivity {
             }
         });
     }
-
 }

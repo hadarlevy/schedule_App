@@ -8,11 +8,12 @@
     android:layout_height="match_parent"
     tools:context=".AdminScheduleActivity">
 
-    <!-- Main content layout -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:background="@color/white"
+
         android:padding="16dp">
 
         <androidx.appcompat.widget.Toolbar
@@ -20,26 +21,392 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-        <FrameLayout
-            android:id="@+id/content_frame"
+
+        <!-- Process Steps Layout -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="20dp"
-            android:gravity="center">
-
-        <TextView
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Admin Schedule Page"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="@color/white"
+            android:padding="16dp">
 
-        <!-- Add more views as needed -->
-        </FrameLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="16dp">
 
+                <!-- Step 1 -->
+                <LinearLayout
+                    android:id="@+id/step1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="8dp">
+
+                    <ImageView
+                        android:id="@+id/step1_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_circle_hollow1"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Shifts"
+                        android:textSize="14sp"
+                        android:gravity="center" />
+                </LinearLayout>
+
+                <!-- Step 1 to Step 2 Line -->
+                <View
+                    android:id="@+id/step1_to_step2_line"
+                    android:layout_width="0dp"
+                    android:layout_height="2dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/darker_gray" />
+
+                <!-- Step 2 -->
+                <LinearLayout
+                    android:id="@+id/step2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.8"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="9dp">
+
+                    <ImageView
+                        android:id="@+id/step2_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_circle_hollow2"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Parameters"
+                        android:textSize="14dp"
+                        android:gravity="center" />
+                </LinearLayout>
+
+                <!-- Step 2 to Step 3 Line -->
+                <View
+                    android:id="@+id/step2_to_step3_line"
+                    android:layout_width="0dp"
+                    android:layout_height="2dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/darker_gray" />
+
+                <!-- Step 3 -->
+                <LinearLayout
+                    android:id="@+id/step3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.2"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="8dp">
+
+                    <ImageView
+                        android:id="@+id/step3_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_circle_hollow3"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Create"
+                        android:textSize="14sp"
+                        android:gravity="center" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Step 1 Content -->
+        <LinearLayout
+            android:id="@+id/step1_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="25dp"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Set Numbers of shifts per day"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_gravity="start" />
+
+            <RadioGroup
+                android:id="@+id/shift_radio_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/radio_all_day"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="All day" />
+
+                <RadioButton
+                    android:id="@+id/radio_morning_evening"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Morning and evening" />
+
+                <RadioButton
+                    android:id="@+id/radio_morning_noon_evening"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Morning, noon, and evening" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <!-- Step 2 Content -->
+        <LinearLayout
+            android:id="@+id/step2_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select the importance of each of the following parameters"
+                android:textSize="14sp"
+                android:layout_gravity="start" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="for calculating and planning the schedule"
+                android:textSize="14sp"
+                android:layout_gravity="start" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:text="1-  for the lowest,  3-  for the highest"
+                android:textSize="12sp"
+                android:layout_gravity="start" />
+
+            <!-- Parameters -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <!-- Parameter 1 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Fairness"
+                        android:textSize="16sp" />
+
+                    <RadioGroup
+                        android:id="@+id/parameter1_rating"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/radio_fairness_1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1" />
+
+                        <RadioButton
+                            android:id="@+id/radio_fairness_2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="2" />
+
+                        <RadioButton
+                            android:id="@+id/radio_fairness_3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="3" />
+                    </RadioGroup>
+
+                    <ImageView
+                        android:id="@+id/parameter1_info"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_question_mark"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="8dp" />
+                </LinearLayout>
+
+                <!-- Parameter 2 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Employees Preferences"
+                        android:textSize="16sp" />
+
+                    <RadioGroup
+                        android:id="@+id/parameter2_rating"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/radio_preferences_1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1" />
+
+                        <RadioButton
+                            android:id="@+id/radio_preferences_2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="2" />
+
+                        <RadioButton
+                            android:id="@+id/radio_preferences_3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="3" />
+                    </RadioGroup>
+
+                    <ImageView
+                        android:id="@+id/parameter2_info"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_question_mark"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="8dp" />
+                </LinearLayout>
+
+                <!-- Parameter 3 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Shifts Cover"
+                        android:textSize="16sp" />
+
+                    <RadioGroup
+                        android:id="@+id/parameter3_rating"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/radio_employability_1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1" />
+
+                        <RadioButton
+                            android:id="@+id/radio_employability_2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="2" />
+
+                        <RadioButton
+                            android:id="@+id/radio_employability_3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="3" />
+                    </RadioGroup>
+
+                    <ImageView
+                        android:id="@+id/parameter3_info"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_question_mark"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="8dp" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Step 3 Content -->
+        <LinearLayout
+            android:id="@+id/step3_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Schedule Date"
+                android:textSize="18sp"
+                android:layout_gravity="center" />
+
+            <TextView
+                android:id="@+id/schedule_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp" />
+
+
+            <!-- Create Schedule Button -->
+            <Button
+                android:id="@+id/create_schedule_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Create Schedule"
+                android:layout_gravity="center"
+                android:padding="16dp" />
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- NavigationView for the drawer -->
+    <!-- Navigation Drawer -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
@@ -50,4 +417,3 @@
         app:menu="@menu/drawer_menu"
         app:itemIconSize="24dp" />
 </androidx.drawerlayout.widget.DrawerLayout>
-

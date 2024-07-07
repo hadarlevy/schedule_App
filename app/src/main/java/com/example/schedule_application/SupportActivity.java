@@ -94,8 +94,9 @@ public class SupportActivity extends NavBarActivity {
 
                     Message message = new MimeMessage(session);
                     // Set the From address dynamically based on user input
-                    String senderEmail = emailInput.getText().toString(); // Get user's email input
-                    message.setFrom(new InternetAddress(senderEmail));
+                    String senderEmail = emailInput.getText().toString().trim(); // Get user's email input
+                    InternetAddress fromAddress = new InternetAddress(senderEmail);
+                    message.setFrom(fromAddress);
                     message.setRecipients(Message.RecipientType.TO, InternetAddress.parse("hadarle2@ac.sce.ac.il"));
                     message.setSubject("Support Request from " + name);
                     message.setText("Name: " + name + "\nEmail: " + email + "\nPhone: " + phone + "\n\nDescription:\n" + description);
