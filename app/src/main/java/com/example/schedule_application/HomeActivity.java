@@ -24,6 +24,7 @@ import java.util.List;
 public class HomeActivity extends NavBarActivity {
 
     private static final String TAG = "HomeActivity";
+    private static final int REQUEST_CODE_EDIT_USER_DETAILS = 1;
 
     private TextView tvUserName, tvUserEmail, tvUserPhone;
     private EditText etUserName, etUserPhone;
@@ -63,10 +64,9 @@ public class HomeActivity extends NavBarActivity {
         editUserDetailsLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(HomeActivity.this, EditUserDetailsActivity.class));
+                startActivityForResult(new Intent(HomeActivity.this, EditUserDetailsActivity.class), REQUEST_CODE_EDIT_USER_DETAILS);
             }
         });
-
 
         viewShiftsLink.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,5 +119,40 @@ public class HomeActivity extends NavBarActivity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_EDIT_USER_DETAILS && resultCode == RESULT_OK) {
+            // Reload user details
+            if (user != null) {
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                db.collection("users").document(user.getUid()).get()
+                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                            @Override
+                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                if (documentSnapshot.exists()) {
+                                    String firstName = documentSnapshot.getString("First name");
+                                    String lastName = documentSnapshot.getString("Last name");
+                                    String phoneNumber = documentSnapshot.getString("Phone");
+                                    String displayName = firstName + " " + lastName;
+                                    tvUserName.setText(displayName);
+                                    tvUserPhone.setText(phoneNumber);
+                                    etUserName.setText(displayName);
+                                    etUserPhone.setText(phoneNumber);
+                                } else {
+                                    Log.d(TAG, "No such document");
+                                }
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.d(TAG, "get failed with ", e);
+                            }
+                        });
+            } else {
+                Log.d(TAG, "User is null");
+            }
+        }
+    }
 }
-

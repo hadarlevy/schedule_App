@@ -4,11 +4,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.Toolbar;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -17,17 +17,14 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
-import java.util.Arrays;
 import java.util.List;
 
-public class InformationActivity extends NavBarActivity {
+public class InformationActivity extends AppCompatActivity {
 
     private static final String TAG = "InformationActivity";
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
-    private ActionBarDrawerToggle toggle;
-    private Toolbar toolbar;
     private LinearLayout llEmployees, llShifts;
     private TextView tvSchedulesCount, tvShiftsHeader;
 
@@ -38,9 +35,6 @@ public class InformationActivity extends NavBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.information_activity);
 
-        toolbar = findViewById(R.id.tool_bar);
-        setSupportActionBar(toolbar);
-
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         llEmployees = findViewById(R.id.llEmployees);
@@ -48,11 +42,13 @@ public class InformationActivity extends NavBarActivity {
         tvSchedulesCount = findViewById(R.id.tvSchedulesCount);
         tvShiftsHeader = findViewById(R.id.tvShiftsHeader);
 
-        toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        navigationView.setNavigationItemSelectedListener(this);
+        ImageButton backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish(); // Go back to the previous activity
+            }
+        });
 
         db = FirebaseFirestore.getInstance();
 
@@ -67,13 +63,15 @@ public class InformationActivity extends NavBarActivity {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         List<DocumentSnapshot> documents = queryDocumentSnapshots.getDocuments();
+                        int index = 1;
                         for (DocumentSnapshot document : documents) {
                             String fname = document.getString("First name");
                             String lname = document.getString("Last name");
-                            String name = fname + " " + lname;
+                            String name = index + ". " + fname + " " + lname;
                             String phone = document.getString("Phone");
                             String email = document.getString("Email");
                             addEmployeeInfo(name, phone, email);
+                            index++;
                         }
                     }
                 })
@@ -92,6 +90,11 @@ public class InformationActivity extends NavBarActivity {
         employeeLayout.setPadding(16, 16, 16, 16);
         employeeLayout.setBackgroundResource(R.drawable.shadow); // Example background
         employeeLayout.setGravity(Gravity.CENTER); // Center the content horizontally
+        employeeLayout.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
+        ((LinearLayout.LayoutParams) employeeLayout.getLayoutParams()).setMargins(0, 0, 0, 16); // Add bottom margin
 
         // Create TextViews for name and phone
         TextView nameTextView = new TextView(this);
@@ -122,7 +125,6 @@ public class InformationActivity extends NavBarActivity {
     private void fetchShiftsForEmployee(String email) {
         CollectionReference shiftsRef = db.collection("shifts");
         shiftsRef.whereEqualTo("email", email)
-                .whereIn("option", Arrays.asList("Possible", "Possible and Prefer"))
                 .get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
