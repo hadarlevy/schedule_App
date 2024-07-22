@@ -161,7 +161,7 @@ public class MainActivity extends NavBarActivity {
             @Override
             public void onClick(View v) {
                 int selectedId = rgShiftOptions.getCheckedRadioButtonId();
-                String selectedOption = "Unknown";
+                String selectedOption = "Impossible";
 
                 if (selectedId == R.id.rb_possible_and_prefer) {
                     selectedOption = "Possible and Prefer";
@@ -188,7 +188,7 @@ public class MainActivity extends NavBarActivity {
     }
 
     private void saveShiftOptionToDatabase(String email, Calendar date, String option) {
-        String formattedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date.getTime());
+        String formattedDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(date.getTime());
         DocumentReference docRef = db.collection("shifts").document(email + "_" + formattedDate);
 
         Map<String, Object> shiftData = new HashMap<>();

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.Patterns;
@@ -30,7 +31,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class Registration extends AppCompatActivity {
     public static final String TAG = "RegistrationActivity";
@@ -149,7 +152,60 @@ public class Registration extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
     }
+    private void validateEmail() {
+        String email = editTextEmail.getText().toString().trim();
+        if (TextUtils.isEmpty(email)) {
+            editTextEmail.setError("Enter email");
+        } else if (!isValidEmail(email)) {
+            editTextEmail.setError("Enter a valid email address");
+        } else {
+            editTextEmail.setError(null);
+        }
+    }
 
+    private void validatePassword() {
+        String password = editTextPassword.getText().toString();
+        if (TextUtils.isEmpty(password)) {
+            editTextPassword.setError("Enter password");
+        } else if (password.length() < 6) {
+            editTextPassword.setError("Password must be 6 characters or more");
+        } else {
+            editTextPassword.setError(null);
+        }
+    }
+
+    private void validateName() {
+        String name = editTextName.getText().toString();
+        if (TextUtils.isEmpty(name)) {
+            editTextName.setError("Enter name");
+        } else if (name.length() > 20 || !name.matches("[a-zA-Z]+")) {
+            editTextName.setError("Name must be in English, without spaces, and less than 20 characters");
+        } else {
+            editTextName.setError(null);
+        }
+    }
+
+    private void validateLastName() {
+        String last_name = editTextLastName.getText().toString();
+        if (TextUtils.isEmpty(last_name)) {
+            editTextLastName.setError("Enter last name");
+        } else if (last_name.length() > 20 || !last_name.matches("[a-zA-Z]+")) {
+            editTextLastName.setError("Last name must be in English, without spaces, and less than 20 characters");
+        } else {
+            editTextLastName.setError(null);
+        }
+    }
+
+    private void validatePhone() {
+        String phone = editTextPhone.getText().toString();
+        if (TextUtils.isEmpty(phone)) {
+            editTextPhone.setError("Enter phone number");
+        } else if (!phone.matches("^(\\+972|0)([23489]|5[0248]|7[3678])\\d{7}$")) {
+            editTextPhone.setError("Enter a valid Israeli phone number");
+        } else {
+            editTextPhone.setError(null);
+        }
+    }
     private boolean isInputValid(String email, String password, String name, String last_name, String phone) {
         validateEmail();
         validatePhone();
@@ -165,6 +221,21 @@ public class Registration extends AppCompatActivity {
 
         Log.d(TAG, "Input validation result: " + isValid);
         return isValid;
+    }
+    private boolean isValidEmail(String email) {
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            return false;
+        }
+
+        // List of allowed email domains
+        Set<String> allowedDomains = new HashSet<>();
+        allowedDomains.add("gmail.com");
+        allowedDomains.add("hotmail.com");
+        allowedDomains.add("ac.sce.ac.il");
+        // Add more allowed domains as needed
+
+        String domain = email.substring(email.indexOf('@') + 1);
+        return allowedDomains.contains(domain);
     }
 
     private void checkIfEmailExists(String email) {
@@ -315,48 +386,5 @@ public class Registration extends AppCompatActivity {
                 });
     }
 
-    private void validateEmail() {
-        String email = editTextEmail.getText().toString().trim();
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            editTextEmail.setError("Invalid email format");
-        } else {
-            editTextEmail.setError(null);
-        }
-    }
 
-    private void validatePassword() {
-        String password = editTextPassword.getText().toString();
-        if (password.length() < 8) {
-            editTextPassword.setError("Password must be at least 8 characters long");
-        } else {
-            editTextPassword.setError(null);
-        }
-    }
-
-    private void validateName() {
-        String name = editTextName.getText().toString().trim();
-        if (name.isEmpty()) {
-            editTextName.setError("Name cannot be empty");
-        } else {
-            editTextName.setError(null);
-        }
-    }
-
-    private void validateLastName() {
-        String lastName = editTextLastName.getText().toString().trim();
-        if (lastName.isEmpty()) {
-            editTextLastName.setError("Last name cannot be empty");
-        } else {
-            editTextLastName.setError(null);
-        }
-    }
-
-    private void validatePhone() {
-        String phone = editTextPhone.getText().toString().trim();
-        if (!Patterns.PHONE.matcher(phone).matches()) {
-            editTextPhone.setError("Invalid phone number format");
-        } else {
-            editTextPhone.setError(null);
-        }
-    }
 }

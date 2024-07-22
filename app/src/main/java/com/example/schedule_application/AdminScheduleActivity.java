@@ -3,6 +3,7 @@ package com.example.schedule_application;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
@@ -22,10 +23,17 @@ import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 public class AdminScheduleActivity extends NavBarActivity {
 
@@ -34,6 +42,9 @@ public class AdminScheduleActivity extends NavBarActivity {
     ActionBarDrawerToggle toggle;
     Toolbar toolbar;
     private LinearLayout step1Content, step2Content, step3Content;
+    private List<EmployeePreference> employeePreferences;
+    private Set<String> uniqueEmployees;
+
     private ImageView step1Icon, step2Icon, step3Icon;
     private View step1ToStep2Line, step2ToStep3Line;
     private RadioGroup shiftRadioGroup;
@@ -42,6 +53,9 @@ public class AdminScheduleActivity extends NavBarActivity {
     private PopupWindow tooltipPopup;
     private TextView scheduleDate;
     private int shiftsPerDay = 1; // Default value
+    private String startDate;
+    private String endDate;
+    private String weekAgoDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +88,8 @@ public class AdminScheduleActivity extends NavBarActivity {
 
         setScheduleDate();
 
+        fetchEmployeePreferences();
+
         // Set onClickListeners for steps
         step1Icon.setOnClickListener(v -> showStepContent(1));
         step2Icon.setOnClickListener(v -> showStepContent(2));
@@ -84,6 +100,67 @@ public class AdminScheduleActivity extends NavBarActivity {
 
         // Create Schedule button functionality
         createScheduleButton.setOnClickListener(v -> createSchedule());
+    }
+
+    private void fetchEmployeePreferences() {
+        uniqueEmployees = new HashSet<>();
+        employeePreferences = new ArrayList<>();
+
+        db.collection("shifts")
+                .whereGreaterThanOrEqualTo("date", startDate)
+                .whereLessThanOrEqualTo("date", endDate)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Map<String, List<String>> possibleMap = new HashMap<>();
+                        Map<String, List<String>> preferredMap = new HashMap<>();
+
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String email = document.getString("email");
+                            String date = document.getString("date");
+                            String option = document.getString("option");
+
+                            Log.d("FETCH_PREFS", "Email: " + email + ", Date: " + date + ", Option: " + option);
+
+                            // Skip "impossible" shifts
+                            if ("Impossible".equals(option)) {
+                                continue;
+                            }
+
+                            uniqueEmployees.add(email);
+
+                            if (!possibleMap.containsKey(email)) {
+                                possibleMap.put(email, new ArrayList<>());
+                            }
+                            possibleMap.get(email).add(date);
+
+                            if ("Possible and Prefer".equals(option)) {
+                                if (!preferredMap.containsKey(email)) {
+                                    preferredMap.put(email, new ArrayList<>());
+                                }
+                                preferredMap.get(email).add(date);
+                            }
+                        }
+
+                        for (String email : possibleMap.keySet()) {
+                            List<String> possibleDays = possibleMap.get(email);
+                            List<String> preferredDays = preferredMap.containsKey(email) ? preferredMap.get(email) : new ArrayList<>();
+                            employeePreferences.add(new EmployeePreference(email, possibleDays, preferredDays));
+                        }
+
+                        // Log the entire list of employee preferences
+                        for (EmployeePreference preference : employeePreferences) {
+                            Log.d("FETCH_PREFS", preference.toString());
+                        }
+
+                        Log.d("FETCH_PREFS", "Total unique employees: " + uniqueEmployees.size());
+
+                        // Proceed with creating the schedule after fetching preferences
+                        createSchedule();
+                    } else {
+                        showToast("Failed to fetch employee preferences.");
+                    }
+                });
     }
 
     private void showStepContent(int step) {
@@ -143,13 +220,19 @@ public class AdminScheduleActivity extends NavBarActivity {
         calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY); // Set to Sunday
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
 
-        String startDate = sdf.format(calendar.getTime());
+        startDate = sdf.format(calendar.getTime());
 
         calendar.add(Calendar.DAY_OF_WEEK, 6); // Move to Saturday of the same week
-        String endDate = sdf.format(calendar.getTime());
+        endDate = sdf.format(calendar.getTime());
+
+        // Calculate the date a week ago from startDate
+        calendar.add(Calendar.DAY_OF_YEAR, -13); // -6 (for endDate) - 7 (one week before startDate)
+        weekAgoDate = sdf.format(calendar.getTime());
 
         String dateRange = startDate + " - " + endDate;
         scheduleDate.setText(dateRange);
+
+        Log.d("SCHEDULE_DATE", "Start date: " + startDate + ", End date: " + endDate + ", Week ago date: " + weekAgoDate);
     }
 
     private void setUpTooltips() {
@@ -157,9 +240,9 @@ public class AdminScheduleActivity extends NavBarActivity {
         ImageView parameter2Info = findViewById(R.id.parameter2_info);
         ImageView parameter3Info = findViewById(R.id.parameter3_info);
 
-        parameter1Info.setOnClickListener(v -> showTooltip(v, " Ensures that all employees have a similar number of shifts. The goal is to keep the difference in the number of shifts between any two employees to a maximum of one."));
+        parameter1Info.setOnClickListener(v -> showTooltip(v, "Ensures that all employees have a similar number of shifts. The goal is to keep the difference in the number of shifts between any two employees to a maximum of one."));
         parameter2Info.setOnClickListener(v -> showTooltip(v, "Evaluates how well the assigned shifts match what employees prefer, rewarding schedules that align with their desired shifts."));
-        parameter3Info.setOnClickListener(v -> showTooltip(v, " Measures how well the schedule meets the required work hours by maximizing the number of covered shifts."));
+        parameter3Info.setOnClickListener(v -> showTooltip(v, "Measures how well the schedule meets the required work hours bymaximizing the number of covered shifts."));
     }
 
     private void showTooltip(View anchorView, String text) {
@@ -223,8 +306,16 @@ public class AdminScheduleActivity extends NavBarActivity {
             return;
         }
 
+        // Count the number of unique employees
+        int numberOfEmployees = uniqueEmployees.size();
+        Log.d("CREATE_SCHEDULE", "Number of unique employees: " + numberOfEmployees);
+        showToast("Number of unique employees: " + numberOfEmployees);
+
         // Proceed with creating the schedule
-        // You can implement your scheduling logic here
+        // Implement your scheduling logic here
+
+        // Delete old shifts from the database
+        deleteOldShifts();
     }
 
     private int getSelectedRating(int groupId) {
@@ -240,6 +331,25 @@ public class AdminScheduleActivity extends NavBarActivity {
         } else {
             return 0;
         }
+    }
+
+    private void deleteOldShifts() {
+        db.collection("shifts")
+                .whereLessThan("date", weekAgoDate)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String docId = document.getId();
+                            db.collection("shifts").document(docId).delete()
+                                    .addOnSuccessListener(aVoid -> Log.d("DELETE_OLD_SHIFTS", "DocumentSnapshot successfully deleted: " + docId))
+                                    .addOnFailureListener(e -> Log.w("DELETE_OLD_SHIFTS", "Error deleting document", e));
+                        }
+                        showToast("Old shifts deleted successfully.");
+                    } else {
+                        showToast("Failed to delete old shifts.");
+                    }
+                });
     }
 
     private void showToast(String message) {
