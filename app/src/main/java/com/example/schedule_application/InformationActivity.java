@@ -17,7 +17,10 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class InformationActivity extends AppCompatActivity {
 
@@ -138,7 +141,7 @@ public class InformationActivity extends AppCompatActivity {
                             llShifts.addView(noShiftsTextView);
                         } else {
                             for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
-                                String shiftDate = document.getString("date");
+                                Date shiftDate = document.getDate("date");
                                 addShiftInfo(shiftDate);
                             }
                         }
@@ -152,9 +155,13 @@ public class InformationActivity extends AppCompatActivity {
                 });
     }
 
-    private void addShiftInfo(String shiftDate) {
+    private void addShiftInfo(Date shiftDate) {
+        // Format the Date object to a String
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+        String formattedDate = dateFormat.format(shiftDate);
+
         TextView textView = new TextView(this);
-        textView.setText("Shift Date: " + shiftDate);
+        textView.setText("Shift Date: " + formattedDate);
         textView.setPadding(16, 16, 16, 16);
         llShifts.addView(textView);
     }

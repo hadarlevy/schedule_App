@@ -1,4 +1,3 @@
-// src/com/example/schedule_application/ShiftsAdapter.java
 package com.example.schedule_application;
 
 import android.content.Context;
@@ -8,7 +7,10 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 public class ShiftsAdapter extends BaseAdapter {
 
@@ -45,10 +47,15 @@ public class ShiftsAdapter extends BaseAdapter {
         TextView shiftNo = convertView.findViewById(R.id.shift_no);
         TextView shiftDate = convertView.findViewById(R.id.shift_date);
 
-        Shift shift = shiftList.get(position);
+        Shift shift = (Shift) getItem(position);
+
+        // Format the Date object to a String
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+        String formattedDate = dateFormat.format(shift.getDate());
+
         // Set the data to the views
         shiftNo.setText("Shift no: " + (position + 1));
-        shiftDate.setText(shift.getDate());
+        shiftDate.setText(formattedDate);
 
         return convertView;
     }

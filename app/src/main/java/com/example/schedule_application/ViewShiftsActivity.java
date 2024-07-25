@@ -2,7 +2,6 @@ package com.example.schedule_application;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -19,9 +18,11 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public class ViewShiftsActivity extends AppCompatActivity {
 
@@ -97,7 +98,11 @@ public class ViewShiftsActivity extends AppCompatActivity {
         TextView shiftDateView = shiftView.findViewById(R.id.shift_date);
 
         shiftNoView.setText("Shift no: " + shiftNumber);
-        shiftDateView.setText(shift.getDate());
+
+        // Format the Date object to a String
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+        String formattedDate = dateFormat.format(shift.getDate());
+        shiftDateView.setText(formattedDate);
 
         shiftsContainer.addView(shiftView);
     }

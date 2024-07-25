@@ -25,9 +25,11 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -106,18 +108,37 @@ public class AdminScheduleActivity extends NavBarActivity {
         uniqueEmployees = new HashSet<>();
         employeePreferences = new ArrayList<>();
 
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+        Date startDateParsed = null;
+        Date endDateParsed = null;
+        try {
+            startDateParsed = sdf.parse(startDate);
+            endDateParsed = sdf.parse(endDate);
+
+            // Adjust endDate to include the whole day
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(endDateParsed);
+            cal.add(Calendar.DAY_OF_YEAR, 1); // Move to the next day
+            endDateParsed = cal.getTime();
+        } catch (ParseException e) {
+            Log.e("FETCH_PREFS", "Date parsing failed", e);
+            showToast("Failed to parse date.");
+            return;
+        }
+
         db.collection("shifts")
-                .whereGreaterThanOrEqualTo("date", startDate)
-                .whereLessThanOrEqualTo("date", endDate)
+                .whereGreaterThanOrEqualTo("date", startDateParsed)
+                .whereLessThan("date", endDateParsed) // Use less than the next day to include the whole end date
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Map<String, List<String>> possibleMap = new HashMap<>();
                         Map<String, List<String>> preferredMap = new HashMap<>();
+                        Set<String> employeesWithPossibleShifts = new HashSet<>();
 
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             String email = document.getString("email");
-                            String date = document.getString("date");
+                            Date date = document.getDate("date");
                             String option = document.getString("option");
 
                             Log.d("FETCH_PREFS", "Email: " + email + ", Date: " + date + ", Option: " + option);
@@ -129,21 +150,29 @@ public class AdminScheduleActivity extends NavBarActivity {
 
                             uniqueEmployees.add(email);
 
-                            if (!possibleMap.containsKey(email)) {
-                                possibleMap.put(email, new ArrayList<>());
-                            }
-                            possibleMap.get(email).add(date);
-
-                            if ("Possible and Prefer".equals(option)) {
+                            String dateString = sdf.format(date);
+                            if ("Possible".equals(option)) {
+                                if (!possibleMap.containsKey(email)) {
+                                    possibleMap.put(email, new ArrayList<>());
+                                }
+                                possibleMap.get(email).add(dateString);
+                            } else if ("Possible and Prefer".equals(option)) {
                                 if (!preferredMap.containsKey(email)) {
                                     preferredMap.put(email, new ArrayList<>());
                                 }
-                                preferredMap.get(email).add(date);
+                                preferredMap.get(email).add(dateString);
                             }
+
+                            // Mark employee as having at least one possible shift
+                            employeesWithPossibleShifts.add(email);
                         }
 
-                        for (String email : possibleMap.keySet()) {
-                            List<String> possibleDays = possibleMap.get(email);
+                        for (String email : uniqueEmployees) {
+                            if (!employeesWithPossibleShifts.contains(email)) {
+                                continue; // Skip employees with only impossible shifts
+                            }
+
+                            List<String> possibleDays = possibleMap.containsKey(email) ? possibleMap.get(email) : new ArrayList<>();
                             List<String> preferredDays = preferredMap.containsKey(email) ? preferredMap.get(email) : new ArrayList<>();
                             employeePreferences.add(new EmployeePreference(email, possibleDays, preferredDays));
                         }
@@ -242,7 +271,7 @@ public class AdminScheduleActivity extends NavBarActivity {
 
         parameter1Info.setOnClickListener(v -> showTooltip(v, "Ensures that all employees have a similar number of shifts. The goal is to keep the difference in the number of shifts between any two employees to a maximum of one."));
         parameter2Info.setOnClickListener(v -> showTooltip(v, "Evaluates how well the assigned shifts match what employees prefer, rewarding schedules that align with their desired shifts."));
-        parameter3Info.setOnClickListener(v -> showTooltip(v, "Measures how well the schedule meets the required work hours bymaximizing the number of covered shifts."));
+        parameter3Info.setOnClickListener(v -> showTooltip(v, "Measures how well the schedule meets the required work hours by maximizing the number of covered shifts."));
     }
 
     private void showTooltip(View anchorView, String text) {
@@ -334,8 +363,18 @@ public class AdminScheduleActivity extends NavBarActivity {
     }
 
     private void deleteOldShifts() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+        Date weekAgoDateParsed = null;
+        try {
+            weekAgoDateParsed = sdf.parse(weekAgoDate);
+        } catch (ParseException e) {
+            Log.e("DELETE_OLD_SHIFTS", "Date parsing failed", e);
+            showToast("Failed to parse week ago date.");
+            return;
+        }
+
         db.collection("shifts")
-                .whereLessThan("date", weekAgoDate)
+                .whereLessThan("date", weekAgoDateParsed)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {

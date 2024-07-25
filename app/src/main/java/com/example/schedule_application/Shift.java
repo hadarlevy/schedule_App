@@ -1,16 +1,17 @@
-// src/com/example/schedule_application/Shift.java
 package com.example.schedule_application;
+
+import java.util.Date;
 
 public class Shift {
     private String email;
-    private String date;
+    private Date date;
     private String option;
 
     public Shift() {
         // Required empty constructor
     }
 
-    public Shift(String email, String date, String option) {
+    public Shift(String email, Date date, String option) {
         this.email = email;
         this.date = date;
         this.option = option;
@@ -24,11 +25,11 @@ public class Shift {
         this.email = email;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 
