@@ -30,6 +30,15 @@
                 android:src="@drawable/ic_arrow_back"
                 android:contentDescription="@string/back_button_description"/>
         </FrameLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Employees Info"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"/>
 
         <ScrollView
             android:layout_width="match_parent"
