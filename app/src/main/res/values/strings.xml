@@ -41,5 +41,6 @@
     <string name="navigation_drawer_close">Close Navigation Drawer</string>
     <string name="back_button_description">Back</string>
     <string name="update_your_personal_details">Update Your Personal Details</string>
+    <string name="close_button_description">close button</string>
 
 </resources>
