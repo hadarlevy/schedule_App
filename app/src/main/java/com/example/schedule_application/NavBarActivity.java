@@ -90,7 +90,8 @@ public abstract class NavBarActivity extends AppCompatActivity implements Naviga
                 Intent intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
             } else if (id == R.id.nav_my_timesheet) {
-                // Handle Timesheet click
+                Intent intent = new Intent(this, EmployeeTimesheetActivity.class);
+                startActivity(intent);
             } else if (id == R.id.nav_logout) {
                 FirebaseAuth.getInstance().signOut();
                 Intent intent = new Intent(getApplicationContext(), Login.class);

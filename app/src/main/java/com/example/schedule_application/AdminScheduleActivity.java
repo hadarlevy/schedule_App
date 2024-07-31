@@ -1,6 +1,9 @@
 package com.example.schedule_application;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -13,18 +16,29 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class AdminScheduleActivity extends NavBarActivity {
+    private List<Map<String, String>> scheduleData;
 
     DrawerLayout drawerLayout;
     NavigationView navigationView;
@@ -305,47 +320,6 @@ public class AdminScheduleActivity extends NavBarActivity {
         });
     }
 
-    private void createSchedule() {
-        // Validate step 1 selection
-        int selectedId = shiftRadioGroup.getCheckedRadioButtonId();
-        if (selectedId == -1) {
-            // No selection in Step 1
-            showToast("Please select shifts per day.");
-            return;
-        } else {
-            // Update shiftsPerDay based on selection
-            if (selectedId == R.id.radio_all_day) {
-                shiftsPerDay = 1;
-            } else if (selectedId == R.id.radio_morning_evening) {
-                shiftsPerDay = 2;
-            } else if (selectedId == R.id.radio_morning_noon_evening) {
-                shiftsPerDay = 3;
-            }
-        }
-
-        // Get selected ratings from Step 2
-        int fairness = getSelectedRating(R.id.parameter1_rating);
-        int preference = getSelectedRating(R.id.parameter2_rating);
-        int cover = getSelectedRating(R.id.parameter3_rating);
-
-        // Validate if any two ratings are the same
-        if (fairness == preference || fairness == cover || preference == cover) {
-            // Display error message about duplicate ratings
-            showToast("Parameters cannot have the same rating.");
-            return;
-        }
-
-        // Count the number of unique employees
-        int numberOfEmployees = uniqueEmployees.size();
-        Log.d("CREATE_SCHEDULE", "Number of unique employees: " + numberOfEmployees);
-        showToast("Number of unique employees: " + numberOfEmployees);
-
-        // Proceed with creating the schedule
-        // Implement your scheduling logic here
-
-        // Delete old shifts from the database
-        deleteOldShifts();
-    }
 
     private int getSelectedRating(int groupId) {
         RadioGroup group = findViewById(groupId);
@@ -389,9 +363,181 @@ public class AdminScheduleActivity extends NavBarActivity {
                         showToast("Failed to delete old shifts.");
                     }
                 });
+        db.collection("schedule")
+                .whereLessThan("date", weekAgoDateParsed)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String docId = document.getId();
+                            db.collection("schedule").document(docId).delete()
+                                    .addOnSuccessListener(aVoid -> Log.d("DELETE_OLD_SCHEDULES", "DocumentSnapshot successfully deleted: " + docId))
+                                    .addOnFailureListener(e -> Log.w("DELETE_OLD_SCHEDULES", "Error deleting document", e));
+                        }
+                        showToast("Old schedule deleted successfully.");
+                    } else {
+                        showToast("Failed to delete old schedule.");
+                    }
+                });
     }
 
     private void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
+
+
+    private void createSchedule() {
+
+        // Validate step 1 selection
+        int selectedId = shiftRadioGroup.getCheckedRadioButtonId();
+        if (selectedId == -1) {
+            showToast("Please select shifts per day.");
+            return;
+        } else {
+            if (selectedId == R.id.radio_all_day) {
+                shiftsPerDay = 1;
+            } else if (selectedId == R.id.radio_morning_evening) {
+                shiftsPerDay = 2;
+            } else if (selectedId == R.id.radio_morning_noon_evening) {
+                shiftsPerDay = 3;
+            }
+        }
+
+        int fairness = getSelectedRating(R.id.parameter1_rating);
+        int preference = getSelectedRating(R.id.parameter2_rating);
+        int cover = getSelectedRating(R.id.parameter3_rating);
+
+        if (fairness == preference || fairness == cover || preference == cover) {
+            showToast("Parameters cannot have the same rating.");
+            return;
+        }
+
+        showToast("This may take a few moments...");
+        int numberOfEmployees = uniqueEmployees.size();
+        Log.d("CREATE_SCHEDULE", "Number of unique employees: " + numberOfEmployees);
+        showToast("Number of unique employees: " + numberOfEmployees);
+
+        deleteOldShifts();
+
+        Map<String, Object> result = ScheduleAlgorithm.geneticAlgorithm(
+                employeePreferences,
+                uniqueEmployees,
+                fairness,
+                cover,
+                preference,
+                shiftsPerDay
+        );
+
+        String bestSchedule = (String) result.get("bestSchedule");
+        Log.d("CREATE_SCHEDULE", "Best Schedule: " + bestSchedule);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+        Date startDateParsed = null;
+        Date endDateParsed = null;
+        try {
+            startDateParsed = sdf.parse(startDate);
+            endDateParsed = sdf.parse(endDate);
+        } catch (ParseException e) {
+            Log.e("CREATE_SCHEDULE", "Date parsing failed", e);
+            showToast("Failed to parse dates.");
+            return;
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(startDateParsed);
+        int numDays = (int) ((endDateParsed.getTime() - startDateParsed.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+        for (int dayOffset = 0; dayOffset < numDays; dayOffset++) {
+            cal.setTime(startDateParsed);
+            cal.add(Calendar.DAY_OF_YEAR, dayOffset);
+            Date scheduleDate = cal.getTime();
+            String dateString = sdf.format(scheduleDate);
+
+            for (String email : uniqueEmployees) {
+                int employeeIndex = new ArrayList<>(uniqueEmployees).indexOf(email);
+                for (int shiftIndex = 0; shiftIndex < shiftsPerDay; shiftIndex++) {
+                    int bitIndex = employeeIndex * shiftsPerDay + dayOffset * shiftsPerDay + shiftIndex;
+                    boolean isShift = bestSchedule.charAt(bitIndex) == '1';
+                    if (isShift)
+                    {
+                        Map<String, Object> shiftData = new HashMap<>();
+                        shiftData.put("Email", email);
+                        shiftData.put("Date", dateString);
+
+                        if (shiftsPerDay == 1) {
+                            shiftData.put("Morning", "yes");
+                            shiftData.put("Noon", "yes");
+                            shiftData.put("Evening", "yes");
+                        } else if (shiftsPerDay == 2) {
+                            shiftData.put("Morning", (shiftIndex == 0) ? "yes" : "no");
+                            shiftData.put("Noon", "no");
+                            shiftData.put("Evening", (shiftIndex == 1) ? "yes" : "no");
+                        } else if (shiftsPerDay == 3) {
+                            shiftData.put("Morning", (shiftIndex == 0) ? "yes" : "no");
+                            shiftData.put("Noon", (shiftIndex == 1) ? "yes" : "no");
+                            shiftData.put("Evening", (shiftIndex == 2) ? "yes" : "no");
+                        }
+
+                        db.collection("schedule")
+                                .whereEqualTo("Email", email)
+                                .whereEqualTo("Date", dateString)
+                                .get()
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                                        for (QueryDocumentSnapshot document : task.getResult()) {
+                                            db.collection("schedule").document(document.getId()).update(shiftData)
+                                                    .addOnSuccessListener(aVoid -> Log.d("CREATE_SCHEDULE", "Shift updated for " + email + " on " + dateString))
+                                                    .addOnFailureListener(e -> Log.w("CREATE_SCHEDULE", "Error updating shift", e));
+                                        }
+                                    } else {
+                                        db.collection("schedule").add(shiftData)
+                                                .addOnSuccessListener(documentReference -> Log.d("CREATE_SCHEDULE", "Shift added with ID: " + documentReference.getId()))
+                                                .addOnFailureListener(e -> Log.w("CREATE_SCHEDULE", "Error adding shift", e));
+                                    }
+                                });
+                    }
+                }
+            }
+        }
+
+        // Show success popup
+        showScheduleCreatedPopup();
+    }
+    private void showScheduleCreatedPopup() {
+        // Inflate the popup layout
+        LayoutInflater inflater = getLayoutInflater();
+        View popupView = inflater.inflate(R.layout.popup_schedule_created, null);
+
+        // Create the popup window
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(popupView);
+        AlertDialog alertDialog = builder.create();
+        alertDialog.setCancelable(false);
+        alertDialog.show();
+
+        // Get the Send to my email button and set the click listener
+        Button sendEmailButton = popupView.findViewById(R.id.send_email_button);
+        sendEmailButton.setOnClickListener(v -> {
+            // Send email logic here
+            sendScheduleToEmail();
+
+            // Show success message and navigate to home page
+            showToast("Sent successfully");
+            alertDialog.dismiss();
+
+            // Navigate to home page
+            navigateToHomePage();
+        });
+    }
+    private void sendScheduleToEmail() {
+        // Logic to send the schedule to the user's email
+    }
+
+    private void navigateToHomePage() {
+        Intent intent = new Intent(this, AdminHomeActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+
 }

@@ -43,6 +43,11 @@
             android:exported="true">
         </activity>
         <activity
+            android:name=".EmployeeTimesheetActivity"
+            android:theme="@style/Theme.Material3.Light.NoActionBar"
+            android:exported="true">
+        </activity>
+        <activity
             android:name=".RateUsActivity"
             android:theme="@style/Theme.Material3.Light.NoActionBar"
             android:exported="true">
@@ -83,6 +88,15 @@
             android:theme="@style/Theme.Material3.Light.NoActionBar"
             android:exported="true">
         </activity>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.schedule_application.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

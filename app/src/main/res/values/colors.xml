@@ -5,12 +5,12 @@
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
     <color name="backgroundColor">#A38D8B</color>
-    <color name="textColorPrimary">#EB9993</color>
+    <color name="yellow">#F8F0AF</color>
     <color name="textColorSecondary">#5F5D5D</color>
     <color name="red3">#FF6B61</color>
     <color name="light_gray">#7E7E7E</color>
     <color name="header">#3A3B3D</color>
-    <color name="gray">#E8E8E8</color>
+    <color name="gray">#ACAAAA</color>
     <color name="green">#4CB61A</color>
 
 </resources>

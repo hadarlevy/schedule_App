@@ -6,193 +6,413 @@
     android:layout_height="match_parent"
     android:background="@drawable/home_back">
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/white">
-
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/tool_bar"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@color/white">
 
-    <!-- Title -->
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="My timesheet for:"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_gravity="center_horizontal"
-        android:paddingBottom="8dp"/>
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/tool_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-    <!-- Selected Date Range -->
-    <TextView
-        android:id="@+id/tvDateRange"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:layout_gravity="center_horizontal"
-        android:paddingBottom="16dp"/>
-
-    <!-- Table Layout -->
-    <TableLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:stretchColumns="1">
-
-        <!-- Header Row: Dates -->
-        <TableRow
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:text="My timesheet for:"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:paddingBottom="8dp"/>
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Sun"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/light_gray"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Mon"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/light_gray"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Tue"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/light_gray"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Wed"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/light_gray"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Thu"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/light_gray"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Fri"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/light_gray"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Sat"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/light_gray"/>
-        </TableRow>
-
-        <!-- Data Row: Shifts -->
-        <TableRow
+        <!-- Selected Date Range -->
+        <TextView
+            android:id="@+id/tvDateRange"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="16dp"/>
 
-            <TextView
-                android:id="@+id/tvSunShift"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/white"
-                android:text="N/A"/>
+        <!-- Table Layout -->
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="1"
+            android:layout_marginTop="60dp">
 
-            <TextView
-                android:id="@+id/tvMonShift"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/white"
-                android:text="N/A"/>
+            <!-- Header Row: Shifts -->
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/tvTueShift"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/white"
-                android:text="N/A"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text=""
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/gray"/>
 
-            <TextView
-                android:id="@+id/tvWedShift"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/white"
-                android:text="N/A"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Morning"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/gray"/>
 
-            <TextView
-                android:id="@+id/tvThuShift"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/white"
-                android:text="N/A"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Noon"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/gray"/>
 
-            <TextView
-                android:id="@+id/tvFriShift"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/white"
-                android:text="N/A"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Evening"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/gray"/>
+            </TableRow>
 
-            <TextView
-                android:id="@+id/tvSatShift"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:padding="8dp"
-                android:background="@color/white"
-                android:text="N/A"/>
-        </TableRow>
+            <!-- Sunday -->
+            <TableRow
+                android:id="@+id/rowSun"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
 
-    </TableLayout>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Sun"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/gray"/>
 
-</LinearLayout>
+                <TextView
+                    android:id="@+id/tvSunMorningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvSunNoonShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvSunEveningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+            </TableRow>
+
+            <!-- Monday -->
+            <TableRow
+                android:id="@+id/rowMon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Mon"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/gray"/>
+
+                <TextView
+                    android:id="@+id/tvMonMorningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvMonNoonShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvMonEveningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+            </TableRow>
+
+            <!-- Tuesday -->
+            <TableRow
+                android:id="@+id/rowTue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Tue"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/gray"/>
+
+                <TextView
+                    android:id="@+id/tvTueMorningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvTueNoonShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvTueEveningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+            </TableRow>
+
+            <!-- Wednesday -->
+            <TableRow
+                android:id="@+id/rowWed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Wed"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/gray"/>
+
+                <TextView
+                    android:id="@+id/tvWedMorningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvWedNoonShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvWedEveningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+            </TableRow>
+
+            <!-- Thursday -->
+            <TableRow
+                android:id="@+id/rowThu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Thu"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/gray"/>
+
+                <TextView
+                    android:id="@+id/tvThuMorningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvThuNoonShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvThuEveningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+            </TableRow>
+
+            <!-- Friday -->
+            <TableRow
+                android:id="@+id/rowFri"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Fri"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/gray"/>
+
+                <TextView
+                    android:id="@+id/tvFriMorningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvFriNoonShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvFriEveningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+            </TableRow>
+
+            <!-- Saturday -->
+            <TableRow
+                android:id="@+id/rowSat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Sat"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/gray"/>
+
+                <TextView
+                    android:id="@+id/tvSatMorningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvSatNoonShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+
+                <TextView
+                    android:id="@+id/tvSatEveningShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@color/white"
+                    android:text="-"/>
+            </TableRow>
+        </TableLayout>
+    </LinearLayout>
+
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
@@ -202,4 +422,5 @@
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/drawer_menu"
         app:itemIconSize="24dp" />
+
 </androidx.drawerlayout.widget.DrawerLayout>

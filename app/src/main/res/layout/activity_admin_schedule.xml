@@ -206,6 +206,13 @@
                 android:text="1-  for the lowest,  3-  for the highest"
                 android:textSize="12sp"
                 android:layout_gravity="start" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:text="Choose a different rating for each parameter"
+                android:textSize="12sp"
+                android:layout_gravity="start" />
 
             <!-- Parameters -->
             <LinearLayout
@@ -401,9 +408,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Create Schedule"
+                android:layout_marginTop="80dp"
                 android:layout_gravity="center"
+                android:backgroundTint="@color/black"
                 android:padding="16dp" />
+
         </LinearLayout>
+
     </LinearLayout>
 
     <!-- Navigation Drawer -->

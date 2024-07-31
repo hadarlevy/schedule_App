@@ -12,6 +12,20 @@ public class EmployeePreference {
         this.possibleDays = possibleDays;
         this.preferredDays = preferredDays;
     }
+
+    // Getters
+    public String getEmail() {
+        return email;
+    }
+
+    public List<String> getPossibleDays() {
+        return possibleDays;
+    }
+
+    public List<String> getPreferredDays() {
+        return preferredDays;
+    }
+
     @Override
     public String toString() {
         return "EmployeePreference{" +
@@ -20,5 +34,4 @@ public class EmployeePreference {
                 ", preferredDays=" + preferredDays +
                 '}';
     }
-    // Getters and setters if needed
 }
