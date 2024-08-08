@@ -80,7 +80,8 @@ public class ScheduleAlgorithm {
         for (int i = 0; i < employees; i++) {
             shiftsPerEmployee[i] = 0;
             for (int j = 0; j < shiftsPerWeek; j++) {
-                if (schedule.charAt(i * shiftsPerWeek + j) == '1') {
+                int index = i * shiftsPerWeek + j;
+                if (index < schedule.length() && schedule.charAt(index) == '1') {
                     shiftsPerEmployee[i]++;
                 }
             }
@@ -104,7 +105,8 @@ public class ScheduleAlgorithm {
         for (int day = 0; day < shiftsPerWeek; day++) {
             boolean dayCovered = false;
             for (int emp = 0; emp < employees; emp++) {
-                if (schedule.charAt(emp * shiftsPerWeek + day) == '1') {
+                int index = emp * shiftsPerWeek + day;
+                if (index < schedule.length() && schedule.charAt(index) == '1') {
                     dayCovered = true;
                     break;
                 }
@@ -123,7 +125,8 @@ public class ScheduleAlgorithm {
                 try {
                     Date date = dateFormat.parse(day);
                     int dayIndex = date.getDate() - 1;
-                    if (schedule.charAt(empIndex * shiftsPerWeek + dayIndex) == '1') {
+                    int index = empIndex * shiftsPerWeek + dayIndex;
+                    if (index < schedule.length() && schedule.charAt(index) == '1') {
                         preference++;
                     }
                 } catch (ParseException e) {

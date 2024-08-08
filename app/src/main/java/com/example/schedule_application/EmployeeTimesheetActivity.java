@@ -164,7 +164,7 @@ public class EmployeeTimesheetActivity extends NavBarActivity {
                             if (allDay) {
                                 currentRow.setBackgroundColor(getResources().getColor(R.color.yellow));
                                 for (TextView shiftView : dayShiftMap.get(dayOfWeek).values()) {
-                                    shiftView.setText("");
+                                    shiftView.setText("All day");
                                 }
                             }
                         } else {

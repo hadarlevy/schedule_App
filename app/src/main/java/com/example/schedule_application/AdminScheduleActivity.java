@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -28,17 +29,25 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,7 +58,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+
+import javax.mail.MessagingException;
+import javax.mail.Transport;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.CollectionReference;
+import org.apache.poi.ss.usermodel.*;
+import java.util.concurrent.ExecutionException;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class AdminScheduleActivity extends NavBarActivity {
     private List<Map<String, String>> scheduleData;
@@ -387,7 +414,6 @@ public class AdminScheduleActivity extends NavBarActivity {
 
 
     private void createSchedule() {
-
         // Validate step 1 selection
         int selectedId = shiftRadioGroup.getCheckedRadioButtonId();
         if (selectedId == -1) {
@@ -458,8 +484,7 @@ public class AdminScheduleActivity extends NavBarActivity {
                 for (int shiftIndex = 0; shiftIndex < shiftsPerDay; shiftIndex++) {
                     int bitIndex = employeeIndex * shiftsPerDay + dayOffset * shiftsPerDay + shiftIndex;
                     boolean isShift = bestSchedule.charAt(bitIndex) == '1';
-                    if (isShift)
-                    {
+                    if (isShift) {
                         Map<String, Object> shiftData = new HashMap<>();
                         shiftData.put("Email", email);
                         shiftData.put("Date", dateString);
@@ -478,16 +503,35 @@ public class AdminScheduleActivity extends NavBarActivity {
                             shiftData.put("Evening", (shiftIndex == 2) ? "yes" : "no");
                         }
 
+                        // Check if the exact shift already exists
                         db.collection("schedule")
                                 .whereEqualTo("Email", email)
                                 .whereEqualTo("Date", dateString)
                                 .get()
                                 .addOnCompleteListener(task -> {
                                     if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                                        boolean shiftExists = false;
                                         for (QueryDocumentSnapshot document : task.getResult()) {
-                                            db.collection("schedule").document(document.getId()).update(shiftData)
-                                                    .addOnSuccessListener(aVoid -> Log.d("CREATE_SCHEDULE", "Shift updated for " + email + " on " + dateString))
-                                                    .addOnFailureListener(e -> Log.w("CREATE_SCHEDULE", "Error updating shift", e));
+                                            String existingMorning = document.getString("Morning");
+                                            String existingNoon = document.getString("Noon");
+                                            String existingEvening = document.getString("Evening");
+
+                                            if (existingMorning.equals(shiftData.get("Morning")) &&
+                                                    existingNoon.equals(shiftData.get("Noon")) &&
+                                                    existingEvening.equals(shiftData.get("Evening"))) {
+                                                shiftExists = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (!shiftExists) {
+                                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                                db.collection("schedule").document(document.getId()).update(shiftData)
+                                                        .addOnSuccessListener(aVoid -> Log.d("CREATE_SCHEDULE", "Shift updated for " + email + " on " + dateString))
+                                                        .addOnFailureListener(e -> Log.w("CREATE_SCHEDULE", "Error updating shift", e));
+                                            }
+                                        } else {
+                                            Log.d("CREATE_SCHEDULE", "Shift already exists for " + email + " on " + dateString + ". Skipping update.");
                                         }
                                     } else {
                                         db.collection("schedule").add(shiftData)
@@ -518,26 +562,218 @@ public class AdminScheduleActivity extends NavBarActivity {
         // Get the Send to my email button and set the click listener
         Button sendEmailButton = popupView.findViewById(R.id.send_email_button);
         sendEmailButton.setOnClickListener(v -> {
-            // Send email logic here
-            sendScheduleToEmail();
-
-            // Show success message and navigate to home page
-            showToast("Sent successfully");
+            // Fetch the manager's email from the database
+            String adminEmail = user.getEmail();
+            if (adminEmail != null && !adminEmail.isEmpty()) {
+                // Use the dynamically calculated startDate and endDate
+                new GenerateExcelFileTask(adminEmail, startDate, endDate).execute();
+            } else {
+                showToast("Manager email not found.");
+            }
             alertDialog.dismiss();
 
-            // Navigate to home page
+            // Navigate to the home page
             navigateToHomePage();
         });
     }
-    private void sendScheduleToEmail() {
-        // Logic to send the schedule to the user's email
+
+    private class GenerateExcelFileTask extends AsyncTask<Void, Void, Boolean> {
+        private String adminEmail;
+        private String startDate;
+        private String endDate;
+        private Exception exception;
+
+        GenerateExcelFileTask(String adminEmail, String startDate, String endDate) {
+            this.adminEmail = adminEmail;
+            this.startDate = startDate;
+            this.endDate = endDate;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            try {
+                byte[] excelFile = generateExcelFile(startDate, endDate);
+                sendEmailWithAttachment(adminEmail, "Weekly Schedule", "Please check the attached schedule.", excelFile);
+                return true;
+            } catch (IOException | ExecutionException | InterruptedException | ParseException e) {
+                exception = e;
+                Log.e("CREATE_SCHEDULE", "Failed to generate Excel file", e);
+                return false;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success) {
+                showToast("Sent successfully");
+            } else {
+                showToast("Failed to generate schedule file.");
+            }
+        }
     }
+
+
+
 
     private void navigateToHomePage() {
         Intent intent = new Intent(this, AdminHomeActivity.class);
         startActivity(intent);
         finish();
     }
+    private byte[] generateExcelFile(String startDate, String endDate) throws IOException, ExecutionException, InterruptedException, ParseException {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference scheduleRef = db.collection("schedule");
+
+        // Query to get all shifts within the given date range
+        Task<QuerySnapshot> future = scheduleRef.whereGreaterThanOrEqualTo("Date", startDate)
+                .whereLessThanOrEqualTo("Date", endDate).get();
+        List<DocumentSnapshot> documents = Tasks.await(future).getDocuments();
+
+        // Data structure to store shifts
+        Map<String, Map<String, List<String>>> shiftData = new HashMap<>();
+
+        for (DocumentSnapshot document : documents) {
+            String date = document.getString("Date");
+            String email = document.getString("Email");
+            String morning = document.getString("Morning");
+            String noon = document.getString("Noon");
+            String evening = document.getString("Evening");
+
+            List<String> shifts = new ArrayList<>();
+            if ("yes".equals(morning)) shifts.add("Morning");
+            if ("yes".equals(noon)) shifts.add("Afternoon");
+            if ("yes".equals(evening)) shifts.add("Evening");
+
+            shiftData.computeIfAbsent(date, k -> new HashMap<>())
+                    .computeIfAbsent(email, k -> new ArrayList<>())
+                    .addAll(shifts);
+        }
+
+        // Create an Excel workbook and sheet
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Schedule");
+
+        // Set a larger font for the workbook
+        Font headerFont = workbook.createFont();
+        headerFont.setFontHeightInPoints((short) 14);
+        CellStyle headerCellStyle = workbook.createCellStyle();
+        headerCellStyle.setFont(headerFont);
+
+        // Create header row with employee emails
+        Row headerRow = sheet.createRow(0);
+        int colIdx = 1;
+        for (String email : shiftData.values().iterator().next().keySet()) {
+            Cell cell = headerRow.createCell(colIdx++);
+            cell.setCellValue(email);
+            cell.setCellStyle(headerCellStyle);
+        }
+
+        // Create rows for each date
+        int rowIdx = 1;
+        for (String date : shiftData.keySet()) {
+            Row row = sheet.createRow(rowIdx++);
+            Cell dateCell = row.createCell(0);
+            dateCell.setCellValue(date);
+
+            Map<String, List<String>> employees = shiftData.get(date);
+            colIdx = 1;
+            for (String email : shiftData.values().iterator().next().keySet()) {
+                Cell cell = row.createCell(colIdx++);
+                List<String> shifts = employees.getOrDefault(email, Collections.emptyList());
+
+                if (shifts.contains("Morning") && shifts.contains("Afternoon") && shifts.contains("Evening")) {
+                    cell.setCellValue("All day");
+                } else {
+                    StringBuilder shiftText = new StringBuilder();
+                    if (shifts.contains("Morning")) shiftText.append("Morning\n");
+                    if (shifts.contains("Afternoon")) shiftText.append("Afternoon\n");
+                    if (shifts.contains("Evening")) shiftText.append("Evening\n");
+                    cell.setCellValue(shiftText.toString().trim());
+                }
+            }
+        }
+
+        // Set a default column width
+        for (int i = 0; i < colIdx; i++) {
+            sheet.setColumnWidth(i, 20 * 256); // 20 characters wide
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        workbook.write(bos);
+        workbook.close();
+
+        return bos.toByteArray();
+    }
+
+    private void sendEmailWithAttachment(String recipientEmail, String subject, String body, byte[] attachment) {
+        new Thread(() -> {
+            try {
+                // Set up mail server properties
+                Properties props = new Properties();
+                props.put("mail.smtp.host", "smtp.gmail.com");
+                props.put("mail.smtp.port", "587");
+                props.put("mail.smtp.auth", "true");
+                props.put("mail.smtp.starttls.enable", "true");
+
+                // Authenticate and create the mail session
+                Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+                    protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+                        return new javax.mail.PasswordAuthentication("hadarle2@ac.sce.ac.il", "oser gawu ghel btsv");
+                    }
+                });
+
+                // Create the email message
+                MimeMessage message = new MimeMessage(session);
+                message.setFrom(new InternetAddress("hadarle2@ac.sce.ac.il"));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
+                message.setSubject(subject);
+
+                // Create the message body part
+                MimeBodyPart messageBodyPart = new MimeBodyPart();
+                messageBodyPart.setText(body);
+
+                // Create the attachment part
+                MimeBodyPart attachmentPart = new MimeBodyPart();
+                attachmentPart.setDataHandler(new javax.activation.DataHandler(new javax.activation.DataSource() {
+                    @Override
+                    public InputStream getInputStream() throws IOException {
+                        return new ByteArrayInputStream(attachment);
+                    }
+
+                    @Override
+                    public OutputStream getOutputStream() throws IOException {
+                        throw new UnsupportedOperationException("Not implemented");
+                    }
+
+                    @Override
+                    public String getContentType() {
+                        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                    }
+
+                    @Override
+                    public String getName() {
+                        return "schedule.xlsx";
+                    }
+                }));
+                attachmentPart.setFileName("schedule.xlsx");
+
+                // Combine the message parts
+                MimeMultipart multipart = new MimeMultipart();
+                multipart.addBodyPart(messageBodyPart);
+                multipart.addBodyPart(attachmentPart);
+                message.setContent(multipart);
+
+                // Send the email
+                Transport.send(message);
+                runOnUiThread(() -> showToast("Schedule email sent to " + recipientEmail));
+            } catch (MessagingException e) {
+                Log.e("EMAIL_SENDING", "Failed to send email", e);
+                runOnUiThread(() -> showToast("Failed to send schedule email."));
+            }
+        }).start();
+    }
+
 
 
 }
