@@ -73,10 +73,18 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.WriteBatch;
+
 import org.apache.poi.ss.usermodel.*;
 import java.util.concurrent.ExecutionException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.util.Locale;
+
 
 public class AdminScheduleActivity extends NavBarActivity {
     private List<Map<String, String>> scheduleData;
@@ -412,7 +420,6 @@ public class AdminScheduleActivity extends NavBarActivity {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-
     private void createSchedule() {
         // Validate step 1 selection
         int selectedId = shiftRadioGroup.getCheckedRadioButtonId();
@@ -445,21 +452,9 @@ public class AdminScheduleActivity extends NavBarActivity {
 
         deleteOldShifts();
 
-        Map<String, Object> result = ScheduleAlgorithm.geneticAlgorithm(
-                employeePreferences,
-                uniqueEmployees,
-                fairness,
-                cover,
-                preference,
-                shiftsPerDay
-        );
-
-        String bestSchedule = (String) result.get("bestSchedule");
-        Log.d("CREATE_SCHEDULE", "Best Schedule: " + bestSchedule);
-
-        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
-        Date startDateParsed = null;
-        Date endDateParsed = null;
+        final SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+        final Date startDateParsed;
+        final Date endDateParsed;
         try {
             startDateParsed = sdf.parse(startDate);
             endDateParsed = sdf.parse(endDate);
@@ -469,83 +464,85 @@ public class AdminScheduleActivity extends NavBarActivity {
             return;
         }
 
-        Calendar cal = Calendar.getInstance();
+        final Calendar cal = Calendar.getInstance();
         cal.setTime(startDateParsed);
         int numDays = (int) ((endDateParsed.getTime() - startDateParsed.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-        for (int dayOffset = 0; dayOffset < numDays; dayOffset++) {
-            cal.setTime(startDateParsed);
-            cal.add(Calendar.DAY_OF_YEAR, dayOffset);
-            Date scheduleDate = cal.getTime();
-            String dateString = sdf.format(scheduleDate);
+        // Convert the dates to strings for querying
+        final String startDateString = sdf.format(startDateParsed);
+        final String endDateString = sdf.format(endDateParsed);
 
-            for (String email : uniqueEmployees) {
-                int employeeIndex = new ArrayList<>(uniqueEmployees).indexOf(email);
-                for (int shiftIndex = 0; shiftIndex < shiftsPerDay; shiftIndex++) {
-                    int bitIndex = employeeIndex * shiftsPerDay + dayOffset * shiftsPerDay + shiftIndex;
-                    boolean isShift = bestSchedule.charAt(bitIndex) == '1';
-                    if (isShift) {
-                        Map<String, Object> shiftData = new HashMap<>();
-                        shiftData.put("Email", email);
-                        shiftData.put("Date", dateString);
-
-                        if (shiftsPerDay == 1) {
-                            shiftData.put("Morning", "yes");
-                            shiftData.put("Noon", "yes");
-                            shiftData.put("Evening", "yes");
-                        } else if (shiftsPerDay == 2) {
-                            shiftData.put("Morning", (shiftIndex == 0) ? "yes" : "no");
-                            shiftData.put("Noon", "no");
-                            shiftData.put("Evening", (shiftIndex == 1) ? "yes" : "no");
-                        } else if (shiftsPerDay == 3) {
-                            shiftData.put("Morning", (shiftIndex == 0) ? "yes" : "no");
-                            shiftData.put("Noon", (shiftIndex == 1) ? "yes" : "no");
-                            shiftData.put("Evening", (shiftIndex == 2) ? "yes" : "no");
+        // First, delete all shifts in the specified date range
+        db.collection("schedule")
+                .whereGreaterThanOrEqualTo("Date", startDateString)
+                .whereLessThanOrEqualTo("Date", endDateString)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            db.collection("schedule").document(document.getId()).delete()
+                                    .addOnSuccessListener(aVoid -> Log.d("CREATE_SCHEDULE", "Shift deleted with ID: " + document.getId()))
+                                    .addOnFailureListener(e -> Log.w("CREATE_SCHEDULE", "Error deleting shift", e));
                         }
 
-                        // Check if the exact shift already exists
-                        db.collection("schedule")
-                                .whereEqualTo("Email", email)
-                                .whereEqualTo("Date", dateString)
-                                .get()
-                                .addOnCompleteListener(task -> {
-                                    if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                                        boolean shiftExists = false;
-                                        for (QueryDocumentSnapshot document : task.getResult()) {
-                                            String existingMorning = document.getString("Morning");
-                                            String existingNoon = document.getString("Noon");
-                                            String existingEvening = document.getString("Evening");
+                        // Once all shifts in the date range are deleted, proceed to insert new shifts
+                        Map<String, Object> result = ScheduleAlgorithm.geneticAlgorithm(
+                                employeePreferences,
+                                uniqueEmployees,
+                                fairness,
+                                cover,
+                                preference,
+                                shiftsPerDay
+                        );
 
-                                            if (existingMorning.equals(shiftData.get("Morning")) &&
-                                                    existingNoon.equals(shiftData.get("Noon")) &&
-                                                    existingEvening.equals(shiftData.get("Evening"))) {
-                                                shiftExists = true;
-                                                break;
-                                            }
+                        String bestSchedule = (String) result.get("bestSchedule");
+                        Log.d("CREATE_SCHEDULE", "Best Schedule: " + bestSchedule);
+
+                        for (int dayOffset = 0; dayOffset < numDays; dayOffset++) {
+                            cal.setTime(startDateParsed);
+                            cal.add(Calendar.DAY_OF_YEAR, dayOffset);
+                            Date scheduleDate = cal.getTime();
+                            String dateString = sdf.format(scheduleDate);
+
+                            for (String email : uniqueEmployees) {
+                                int employeeIndex = new ArrayList<>(uniqueEmployees).indexOf(email);
+                                for (int shiftIndex = 0; shiftIndex < shiftsPerDay; shiftIndex++) {
+                                    int bitIndex = employeeIndex * shiftsPerDay + dayOffset * shiftsPerDay + shiftIndex;
+                                    boolean isShift = bestSchedule.charAt(bitIndex) == '1';
+                                    if (isShift) {
+                                        Map<String, Object> shiftData = new HashMap<>();
+                                        shiftData.put("Email", email);
+                                        shiftData.put("Date", dateString);
+
+                                        if (shiftsPerDay == 1) {
+                                            shiftData.put("Morning", "yes");
+                                            shiftData.put("Noon", "yes");
+                                            shiftData.put("Evening", "yes");
+                                        } else if (shiftsPerDay == 2) {
+                                            shiftData.put("Morning", (shiftIndex == 0) ? "yes" : "no");
+                                            shiftData.put("Noon", "no");
+                                            shiftData.put("Evening", (shiftIndex == 1) ? "yes" : "no");
+                                        } else if (shiftsPerDay == 3) {
+                                            shiftData.put("Morning", (shiftIndex == 0) ? "yes" : "no");
+                                            shiftData.put("Noon", (shiftIndex == 1) ? "yes" : "no");
+                                            shiftData.put("Evening", (shiftIndex == 2) ? "yes" : "no");
                                         }
 
-                                        if (!shiftExists) {
-                                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                                db.collection("schedule").document(document.getId()).update(shiftData)
-                                                        .addOnSuccessListener(aVoid -> Log.d("CREATE_SCHEDULE", "Shift updated for " + email + " on " + dateString))
-                                                        .addOnFailureListener(e -> Log.w("CREATE_SCHEDULE", "Error updating shift", e));
-                                            }
-                                        } else {
-                                            Log.d("CREATE_SCHEDULE", "Shift already exists for " + email + " on " + dateString + ". Skipping update.");
-                                        }
-                                    } else {
                                         db.collection("schedule").add(shiftData)
                                                 .addOnSuccessListener(documentReference -> Log.d("CREATE_SCHEDULE", "Shift added with ID: " + documentReference.getId()))
                                                 .addOnFailureListener(e -> Log.w("CREATE_SCHEDULE", "Error adding shift", e));
                                     }
-                                });
-                    }
-                }
-            }
-        }
+                                }
+                            }
+                        }
 
-        // Show success popup
-        showScheduleCreatedPopup();
+                        // Show success popup after all new shifts are inserted
+                        showScheduleCreatedPopup();
+                    } else {
+                        Log.w("CREATE_SCHEDULE", "Error getting documents for deletion", task.getException());
+                        showToast("Failed to delete old shifts.");
+                    }
+                });
     }
     private void showScheduleCreatedPopup() {
         // Inflate the popup layout
@@ -630,14 +627,20 @@ public class AdminScheduleActivity extends NavBarActivity {
         List<DocumentSnapshot> documents = Tasks.await(future).getDocuments();
 
         // Data structure to store shifts
-        Map<String, Map<String, List<String>>> shiftData = new HashMap<>();
+        Map<LocalDate, Map<String, List<String>>> shiftData = new HashMap<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+        // Set to store all unique employee emails
+        Set<String> allEmployees = new TreeSet<>();
 
         for (DocumentSnapshot document : documents) {
-            String date = document.getString("Date");
+            LocalDate date = LocalDate.parse(document.getString("Date"), formatter);
             String email = document.getString("Email");
             String morning = document.getString("Morning");
             String noon = document.getString("Noon");
             String evening = document.getString("Evening");
+
+            allEmployees.add(email);  // Collect all unique employee emails
 
             List<String> shifts = new ArrayList<>();
             if ("yes".equals(morning)) shifts.add("Morning");
@@ -648,6 +651,14 @@ public class AdminScheduleActivity extends NavBarActivity {
                     .computeIfAbsent(email, k -> new ArrayList<>())
                     .addAll(shifts);
         }
+
+        // Sort the dates by a custom order with Sunday first
+        List<LocalDate> sortedDates = new ArrayList<>(shiftData.keySet());
+        sortedDates.sort(Comparator.comparing((LocalDate date) -> {
+            // Custom order for days of the week
+            DayOfWeek dayOfWeek = date.getDayOfWeek();
+            return dayOfWeek == DayOfWeek.SUNDAY ? 0 : dayOfWeek.getValue();
+        }).thenComparing(LocalDate::toString));
 
         // Create an Excel workbook and sheet
         Workbook workbook = new XSSFWorkbook();
@@ -662,7 +673,7 @@ public class AdminScheduleActivity extends NavBarActivity {
         // Create header row with employee emails
         Row headerRow = sheet.createRow(0);
         int colIdx = 1;
-        for (String email : shiftData.values().iterator().next().keySet()) {
+        for (String email : allEmployees) {
             Cell cell = headerRow.createCell(colIdx++);
             cell.setCellValue(email);
             cell.setCellStyle(headerCellStyle);
@@ -670,16 +681,20 @@ public class AdminScheduleActivity extends NavBarActivity {
 
         // Create rows for each date
         int rowIdx = 1;
-        for (String date : shiftData.keySet()) {
+        for (LocalDate date : sortedDates) {
             Row row = sheet.createRow(rowIdx++);
             Cell dateCell = row.createCell(0);
-            dateCell.setCellValue(date);
+
+            // Format the date to include the day of the week
+            DayOfWeek dayOfWeek = date.getDayOfWeek();
+            String formattedDate =  dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH) + ", " + date.format(formatter);
+            dateCell.setCellValue(formattedDate);
 
             Map<String, List<String>> employees = shiftData.get(date);
             colIdx = 1;
-            for (String email : shiftData.values().iterator().next().keySet()) {
+            for (String email : allEmployees) {  // Iterate through all employees
                 Cell cell = row.createCell(colIdx++);
-                List<String> shifts = employees.getOrDefault(email, Collections.emptyList());
+                List<String> shifts = employees != null ? employees.getOrDefault(email, Collections.emptyList()) : Collections.emptyList();
 
                 if (shifts.contains("Morning") && shifts.contains("Afternoon") && shifts.contains("Evening")) {
                     cell.setCellValue("All day");

@@ -135,7 +135,7 @@ public class Login extends AppCompatActivity {
                                         checkAdmin(user);
                                     }
                                 } else {
-                                    Toast.makeText(Login.this, "Authentication Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Login.this, "Authentication Failed: Email or Password is incorrect " , Toast.LENGTH_SHORT).show();
                                     progressBar.setVisibility(View.GONE);
                                 }
                             }
