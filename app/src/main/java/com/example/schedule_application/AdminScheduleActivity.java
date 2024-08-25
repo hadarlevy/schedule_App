@@ -345,7 +345,7 @@ public class AdminScheduleActivity extends NavBarActivity {
             if (tooltipPopup != null && tooltipPopup.isShowing()) {
                 tooltipPopup.dismiss();
             }
-        }, 3000);
+        }, 3500);
 
         popupView.setOnTouchListener((v, event) -> {
             if (tooltipPopup != null && tooltipPopup.isShowing()) {

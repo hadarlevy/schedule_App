@@ -43,10 +43,10 @@
                     android:id="@+id/step1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="1.2"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp">
+                    android:padding="9dp">
 
                     <ImageView
                         android:id="@+id/step1_icon"
@@ -60,7 +60,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Shifts"
-                        android:textSize="14sp"
+                        android:textSize="13sp"
                         android:gravity="center" />
                 </LinearLayout>
 
@@ -190,21 +190,18 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Select the importance of each of the following parameters"
-                android:textSize="14sp"
-                android:layout_gravity="start" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="for calculating and planning the schedule"
-                android:textSize="14sp"
-                android:layout_gravity="start" />
+                android:text="Select the importance of each of the following parameters, for calculating and planning the schedule."
+                android:textSize="16sp"
+                android:layout_marginTop="30dp"
+                android:layout_gravity="center_horizontal" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:text="1-  for the lowest,  3-  for the highest"
-                android:textSize="12sp"
+                android:text="1-  for the lowest  3-  for the highest"
+                android:layout_marginTop="30dp"
+                android:textSize="13sp"
                 android:layout_gravity="start" />
             <TextView
                 android:layout_width="wrap_content"
@@ -285,7 +282,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Employees Preferences"
-                        android:textSize="16sp" />
+                        android:textSize="14sp" />
 
                     <RadioGroup
                         android:id="@+id/parameter2_rating"
