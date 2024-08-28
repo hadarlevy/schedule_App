@@ -102,6 +102,7 @@ public class EditUserDetailsActivity extends AppCompatActivity {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 Toast.makeText(EditUserDetailsActivity.this, "Details updated successfully", Toast.LENGTH_SHORT).show();
+                                setResult(RESULT_OK);
                                 finish();
                             }
                         })
